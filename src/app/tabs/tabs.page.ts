@@ -6,8 +6,4 @@ import { Component } from '@angular/core';
   styleUrls: ['tabs.page.scss'],
   standalone: false,
 })
-export class TabsPage {
-
-  constructor() {}
-
-}
+export class TabsPage {}

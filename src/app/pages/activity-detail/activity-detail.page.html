@@ -1,0 +1,22 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="detail-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/explore" text="" icon="arrow-back-outline" class="back-btn"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ activity?.title || 'Activity' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="detail-content" *ngIf="activity">
+  <div class="activity-hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h1>{{ activity.title }}</h1>
+      <span class="category">{{ activity.category }}</span>
+    </div>
+  </div>
+  <div class="activity-body">
+    <p>{{ activity.description }}</p>
+    <ion-chip color="primary">{{ activity.category }}</ion-chip>
+  </div>
+</ion-content>

@@ -1,0 +1,294 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="calendar-toolbar">
+    <ion-title>
+      <div class="toolbar-brand">
+        <div class="brand-logo">
+          <span class="logo-n">N</span>
+          <span class="logo-e">E</span>
+          <span class="logo-t">T</span>
+          <span class="logo-s">S</span>
+        </div>
+        <span class="toolbar-subtitle">Smart Calendar</span>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openStats()" class="stats-btn">
+        <ion-icon name="pie-chart-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="calendar-content" scroll-y="false">
+  <!-- Month Navigator -->
+  <div class="month-navigator animate-fade-in-up">
+    <ion-button fill="clear" size="small" class="nav-btn" disabled>
+      <ion-icon name="chevron-back"></ion-icon>
+    </ion-button>
+    <div class="month-info">
+      <h2 class="month-year">{{ monthNames[currentMonth.getMonth()] }}</h2>
+      <span class="year-label">{{ currentMonth.getFullYear() }}</span>
+    </div>
+    <ion-button fill="clear" size="small" class="nav-btn" disabled>
+      <ion-icon name="chevron-forward"></ion-icon>
+    </ion-button>
+  </div>
+
+  <!-- Quick Stats Bar -->
+  <div class="quick-stats animate-fade-in-up stagger-1">
+    <div class="stat-pill">
+      <ion-icon name="trending-down-outline" color="danger"></ion-icon>
+      <div class="stat-pill-info">
+        <span class="stat-pill-value">${{ monthStats.totalSpent | number:'1.0-0' }}</span>
+        <span class="stat-pill-label">Spent</span>
+      </div>
+    </div>
+    <div class="stat-pill">
+      <ion-icon name="trending-up-outline" color="success"></ion-icon>
+      <div class="stat-pill-info">
+        <span class="stat-pill-value">${{ monthStats.totalIncome | number:'1.0-0' }}</span>
+        <span class="stat-pill-label">Income</span>
+      </div>
+    </div>
+    <div class="stat-pill">
+      <ion-icon name="receipt-outline" color="primary"></ion-icon>
+      <div class="stat-pill-info">
+        <span class="stat-pill-value">{{ monthStats.transactionCount }}</span>
+        <span class="stat-pill-label">Txns</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekday Headers -->
+  <div class="weekday-header animate-fade-in-up stagger-2">
+    <div *ngFor="let day of weekDays" class="weekday-label" [class.weekend]="day === 'Sun' || day === 'Sat'">
+      {{ day }}
+    </div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="calendar-grid animate-fade-in-up stagger-3">
+    <div *ngFor="let day of calendarDays; let i = index"
+         class="calendar-day"
+         [class.other-month]="!day.isCurrentMonth"
+         [class.today]="day.isToday"
+         [class.has-transactions]="day.hasTransactions"
+         [class.future-ai]="day.isFutureWithAI"
+         [class.has-pattern]="day.patterns.length > 0"
+         [class.spending-high]="day.totalSpent > 50"
+         [class.spending-medium]="day.totalSpent > 20 && day.totalSpent <= 50"
+         [style.animation-delay]="i * 0.01 + 's'"
+         (click)="onDayClick(day)">
+
+      <span class="day-number">{{ day.date }}</span>
+
+      <!-- Spending indicator -->
+      <div class="spending-ring" *ngIf="day.hasTransactions && day.totalSpent > 0"
+           [class.ring-high]="day.totalSpent > 50"
+           [class.ring-medium]="day.totalSpent > 20 && day.totalSpent <= 50">
+      </div>
+
+      <!-- AI sparkle for future -->
+      <div class="ai-indicator" *ngIf="day.isFutureWithAI">
+        <ion-icon name="sparkles" class="sparkle-icon"></ion-icon>
+      </div>
+
+      <!-- Pattern dots -->
+      <div class="pattern-dots" *ngIf="day.patterns.length > 0 && day.isFutureWithAI">
+        <span *ngFor="let p of day.patterns.slice(0,2)" class="pattern-dot"
+              [style.background]="getPatternDotColor(p)"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="calendar-legend animate-fade-in">
+    <div class="legend-item">
+      <span class="legend-marker spent"></span>
+      <span>Spent</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-marker ai"></span>
+      <span>AI Plan</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-marker pattern"></span>
+      <span>Pattern</span>
+    </div>
+  </div>
+
+  <!-- Today's Timeline -->
+  <div class="today-section animate-fade-in-up">
+    <div class="section-header">
+      <div class="section-title-group">
+        <ion-icon name="time-outline" color="primary"></ion-icon>
+        <h3>Today's Timeline</h3>
+      </div>
+      <span class="today-date">{{ getDayName(todayStr) }}, 17 Jun</span>
+    </div>
+
+    <div class="timeline-list">
+      <div class="timeline-item" *ngFor="let t of userDnaService.getTransactionsByDate(todayStr); let last = last"
+           [class.last]="last">
+        <div class="timeline-left">
+          <div class="timeline-time">{{ t.time }}</div>
+          <div class="timeline-line" *ngIf="!last"></div>
+        </div>
+        <ion-card class="timeline-card card-hover" (click)="viewTransactionDetail(t)">
+          <ion-card-content class="timeline-card-content">
+            <div class="timeline-icon" [class.income]="t.type === 'credit'">
+              <ion-icon [name]="getTransactionIcon(t.category)"></ion-icon>
+            </div>
+            <div class="timeline-info">
+              <span class="timeline-title">{{ t.description }}</span>
+              <span class="timeline-meta">{{ t.merchant }} · {{ t.category }}</span>
+            </div>
+            <span class="timeline-amount" [class.income]="t.type === 'credit'">
+              {{ t.type === 'debit' ? '-' : '+' }}${{ t.amount | number:'1.2-2' }}
+            </span>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Insights Card -->
+  <ion-card class="insights-card animate-fade-in-up" *ngIf="detectedPatterns.length > 0">
+    <ion-card-header>
+      <div class="insights-header">
+        <div class="insights-icon">
+          <ion-icon name="bulb" color="warning"></ion-icon>
+        </div>
+        <div>
+          <ion-card-subtitle>AI Insights</ion-card-subtitle>
+          <ion-card-title>Your Patterns</ion-card-title>
+        </div>
+      </div>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="pattern-chips">
+        <div class="pattern-chip" *ngFor="let p of detectedPatterns.slice(0,4)">
+          <div class="pattern-chip-icon">
+            <ion-icon name="trending-up-outline"></ion-icon>
+          </div>
+          <div class="pattern-chip-info">
+            <span class="pattern-chip-name">{{ p.subcategory || p.category }}</span>
+            <span class="pattern-chip-detail">{{ p.frequency }} · {{ p.confidence }}% match</span>
+          </div>
+          <ion-badge [color]="p.confidence >= 80 ? 'success' : 'primary'" class="streak-badge">
+            {{ p.streakCount }}x streak
+          </ion-badge>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Spacer for bottom safe area -->
+  <div style="height: 100px;"></div>
+</ion-content>
+
+<!-- Stats Modal -->
+<ion-modal [isOpen]="showStatsModal" (didDismiss)="closeStats()" class="stats-modal">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="modal-toolbar">
+        <ion-buttons slot="start">
+          <ion-button (click)="closeStats()" class="close-btn">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Spending Analytics</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="stats-content">
+      <!-- Hero Stats -->
+      <div class="stats-hero">
+        <div class="hero-card">
+          <span class="hero-label">Total Spent</span>
+          <span class="hero-value">${{ monthStats.totalSpent | number:'1.2-2' }}</span>
+          <div class="hero-trend down">
+            <ion-icon name="trending-down-outline"></ion-icon>
+            <span>12% vs last month</span>
+          </div>
+        </div>
+        <div class="hero-card">
+          <span class="hero-label">Total Income</span>
+          <span class="hero-value income">${{ monthStats.totalIncome | number:'1.2-2' }}</span>
+          <div class="hero-trend up">
+            <ion-icon name="trending-up-outline"></ion-icon>
+            <span>8% vs last month</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Breakdown -->
+      <div class="breakdown-section">
+        <h3 class="breakdown-title">By Category</h3>
+        <div class="breakdown-list">
+          <div class="breakdown-item" *ngFor="let cat of categoryBreakdown; let i = index"
+               [style.animation-delay]="i * 0.05 + 's'">
+            <div class="breakdown-header">
+              <div class="breakdown-icon" [style.background]="'hsl(' + (i * 60 + 200) + ', 70%, 90%)'">
+                <ion-icon [name]="getTransactionIcon(cat.name)" [style.color]="'hsl(' + (i * 60 + 200) + ', 70%, 40%)'"></ion-icon>
+              </div>
+              <span class="breakdown-name">{{ cat.name }}</span>
+              <span class="breakdown-amount">${{ cat.amount | number:'1.2-2' }}</span>
+            </div>
+            <div class="breakdown-bar-bg">
+              <div class="breakdown-bar-fill" [style.width.%]="(cat.amount / monthStats.totalSpent) * 100"
+                   [style.background]="'linear-gradient(90deg, hsl(' + (i * 60 + 200) + ', 70%, 50%), hsl(' + (i * 60 + 200) + ', 70%, 60%))'">
+              </div>
+            </div>
+            <span class="breakdown-percent">{{ (cat.amount / monthStats.totalSpent * 100) | number:'1.0-0' }}%</span>
+          </div>
+        </div>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- Day Detail Modal -->
+<ion-modal [isOpen]="showDetailModal" (didDismiss)="closeDetailModal()" class="detail-modal">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="modal-toolbar">
+        <ion-buttons slot="start">
+          <ion-button (click)="closeDetailModal()" class="close-btn">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>{{ getDayName(selectedDate || '') }}</ion-title>
+        <ion-note slot="end" class="modal-date">{{ selectedDate }}</ion-note>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="detail-content">
+      <div class="day-summary">
+        <div class="day-total">
+          <span class="day-total-label">Day Total</span>
+          <span class="day-total-value">
+            ${{ getSumDebits(selectedTransactions) | number:'1.2-2' }}
+          </span>
+        </div>
+      </div>
+      <div class="transaction-list">
+        <ion-card class="txn-card card-hover" *ngFor="let t of selectedTransactions" (click)="viewTransactionDetail(t)">
+          <ion-card-content class="txn-card-content">
+            <div class="txn-icon-wrapper" [class.income]="t.type === 'credit'">
+              <ion-icon [name]="getTransactionIcon(t.category)"></ion-icon>
+            </div>
+            <div class="txn-info">
+              <span class="txn-title">{{ t.description }}</span>
+              <span class="txn-meta">{{ t.time }} · {{ t.merchant }}</span>
+              <ion-badge [color]="t.type === 'credit' ? 'success' : 'danger'" class="txn-type-badge">
+                {{ t.type }}
+              </ion-badge>
+            </div>
+            <span class="txn-amount" [class.income]="t.type === 'credit'">
+              {{ t.type === 'debit' ? '-' : '+' }}${{ t.amount | number:'1.2-2' }}
+            </span>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

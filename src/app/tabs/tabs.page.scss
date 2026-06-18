@@ -1,1 +1,23 @@
+ion-tab-bar {
+  --background: var(--nets-white);
+  padding-bottom: env(safe-area-inset-bottom, 8px);
+}
 
+ion-tab-button {
+  --ripple-color: var(--nets-blue-light);
+}
+
+ion-tab-button ion-icon {
+  font-size: 1.4rem;
+  transition: transform var(--nets-transition-bounce);
+}
+
+ion-tab-button.tab-selected ion-icon {
+  transform: translateY(-2px);
+}
+
+ion-tab-button ion-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 2px;
+}

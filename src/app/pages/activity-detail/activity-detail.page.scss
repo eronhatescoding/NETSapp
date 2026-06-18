@@ -1,0 +1,52 @@
+.detail-toolbar {
+  --background: var(--nets-white);
+  --border-width: 0;
+}
+
+.back-btn {
+  --color: var(--nets-gray-600);
+  --background: var(--nets-gray-100);
+  --border-radius: var(--nets-radius-full);
+  --padding-start: 8px;
+  --padding-end: 8px;
+  width: 40px;
+  height: 40px;
+}
+
+.activity-hero {
+  background: linear-gradient(135deg, var(--nets-blue-primary), var(--nets-blue-deep));
+  padding: var(--nets-space-8) var(--nets-space-5);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  color: var(--nets-white);
+}
+
+.hero-content h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.category {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.activity-body {
+  padding: var(--nets-space-5);
+}

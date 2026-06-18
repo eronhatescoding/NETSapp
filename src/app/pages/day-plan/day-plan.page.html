@@ -1,0 +1,265 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="day-plan-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/calendar" text="" icon="arrow-back-outline" class="back-btn"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <div class="toolbar-title-group">
+        <span class="toolbar-day">{{ plan?.dayName }}</span>
+        <span class="toolbar-date">{{ plan?.date }}</span>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <div class="ai-badge">
+        <ion-icon name="sparkles"></ion-icon>
+        <span>AI</span>
+      </div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="day-plan-content" *ngIf="plan">
+  <!-- Hero Header with Weather -->
+  <div class="hero-section" [class.rainy]="plan.weather.condition === 'rainy' || plan.weather.condition === 'stormy'">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <!-- Weather Card -->
+      <div class="weather-card">
+        <div class="weather-main">
+          <ion-icon [name]="getWeatherIcon(plan.weather.condition)" class="weather-main-icon"></ion-icon>
+          <div class="weather-temp-block">
+            <span class="weather-temp">{{ plan.weather.temperature }}°</span>
+            <span class="weather-condition">{{ plan.weather.condition | titlecase }}</span>
+          </div>
+        </div>
+        <div class="weather-details">
+          <div class="weather-detail">
+            <ion-icon name="water-outline"></ion-icon>
+            <span>{{ plan.weather.rainChance }}%</span>
+          </div>
+          <div class="weather-detail">
+            <ion-icon name="thermometer-outline"></ion-icon>
+            <span>{{ plan.weather.humidity }}%</span>
+          </div>
+        </div>
+        <p class="weather-desc">{{ plan.weather.description }}</p>
+      </div>
+
+      <!-- AI Summary -->
+      <div class="ai-summary-card">
+        <div class="ai-summary-icon">
+          <ion-icon name="bulb"></ion-icon>
+        </div>
+        <p class="ai-summary-text">{{ plan.aiSummary }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-card" [class.trend-up]="plan.weeklyTrend.trend === 'up'" [class.trend-down]="plan.weeklyTrend.trend === 'down'">
+      <div class="stat-icon-wrap">
+        <ion-icon [name]="plan.weeklyTrend.trend === 'up' ? 'trending-up-outline' : plan.weeklyTrend.trend === 'down' ? 'trending-down-outline' : 'remove-outline'"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ plan.weeklyTrend.trend === 'up' ? '▲' : plan.weeklyTrend.trend === 'down' ? '▼' : '—' }} {{ plan.weeklyTrend.percentage }}%</span>
+        <span class="stat-label">{{ plan.weeklyTrend.label }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap primary">
+        <ion-icon name="cash-outline"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">${{ plan.totalEstimatedCost | number:'1.2-2' }}</span>
+        <span class="stat-label">Est. Total</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap" [class]="'wrap-' + getConfidenceColor(plan.patternMatchScore)">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ plan.patternMatchScore }}%</span>
+        <span class="stat-label">Pattern Match</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detected Patterns -->
+  <div class="patterns-banner" *ngIf="plan.detectedPatterns.length > 0">
+    <div class="patterns-scroll">
+      <div class="pattern-pill" *ngFor="let pattern of plan.detectedPatterns">
+        <span>{{ pattern }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline Title -->
+  <div class="timeline-header">
+    <h3 class="timeline-title">
+      <ion-icon name="time-outline" color="primary"></ion-icon>
+      Your AI Plan
+    </h3>
+    <span class="timeline-subtitle">{{ plan.activities.length }} activities</span>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline">
+    <div class="timeline-item" *ngFor="let activity of plan.activities; let last = last; let i = index"
+         [style.animation-delay]="i * 0.08 + 's'"
+         class="animate-fade-in-up">
+      <div class="timeline-left">
+        <div class="timeline-dot" [style.background]="'var(--ion-color-' + activity.color + ')'"
+             [style.box-shadow]="'0 0 0 4px var(--ion-color-' + activity.color + '-tint)'"></div>
+        <div class="timeline-line" *ngIf="!last"></div>
+      </div>
+
+      <ion-card class="activity-card card-hover card-press" (click)="openAlternatives(activity)">
+        <div class="activity-card-accent" [style.background]="'var(--ion-color-' + activity.color + ')'"></div>
+        <ion-card-content class="activity-content">
+          <!-- Header Row -->
+          <div class="activity-header">
+            <div class="activity-time-block">
+              <span class="activity-time">{{ activity.time }}</span>
+              <span class="activity-end-time" *ngIf="activity.endTime">→ {{ activity.endTime }}</span>
+            </div>
+            <div class="activity-badges">
+              <ion-badge [color]="getConfidenceColor(activity.confidence)" class="confidence-badge">
+                {{ activity.confidence }}%
+              </ion-badge>
+            </div>
+          </div>
+
+          <!-- Title -->
+          <div class="activity-title-row">
+            <ion-icon [name]="activity.icon" [color]="activity.color" class="activity-icon"></ion-icon>
+            <span class="activity-title-text">{{ activity.title }}</span>
+          </div>
+
+          <!-- Description -->
+          <p class="activity-desc">{{ activity.description }}</p>
+
+          <!-- Source Tag -->
+          <div class="source-tag" [class]="'source-' + activity.patternSource">
+            <ion-icon [name]="getPatternSourceIcon(activity.patternSource)"></ion-icon>
+            <span>{{ getPatternSourceLabel(activity.patternSource) }}</span>
+          </div>
+
+          <!-- Weather Note -->
+          <div class="weather-note" *ngIf="activity.weatherNote">
+            <ion-icon name="cloudy-outline"></ion-icon>
+            <span>{{ activity.weatherNote }}</span>
+          </div>
+
+          <!-- Reason -->
+          <div class="reason-box">
+            <ion-icon name="analytics-outline"></ion-icon>
+            <span>{{ activity.reason }}</span>
+          </div>
+
+          <!-- Footer -->
+          <div class="activity-footer">
+            <div class="cost-block">
+              <span class="cost-label">Est.</span>
+              <span class="cost-value">${{ activity.estimatedCost | number:'1.2-2' }}</span>
+            </div>
+            <div class="alt-hint" *ngIf="activity.alternatives.length > 0">
+              <ion-icon name="swap-horizontal-outline"></ion-icon>
+              <span>{{ activity.alternatives.length }} alternatives</span>
+              <span class="save-badge" *ngIf="getSavings(activity) > 0">
+                Save ${{ getSavings(activity) | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- CTA Button -->
+  <div class="cta-section">
+    <ion-button expand="block" color="primary" class="cta-button" (click)="addWholePlan()">
+      <ion-icon name="calendar-outline" slot="start"></ion-icon>
+      Add Full Day to Calendar
+    </ion-button>
+    <p class="cta-note">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      Based on {{ plan.patternMatchScore }}% pattern match with your spending history
+    </p>
+  </div>
+
+  <div style="height: 40px;"></div>
+
+  <!-- Alternatives Modal -->
+  <ion-modal [isOpen]="showAltModal" (didDismiss)="closeAltModal()" class="alt-modal">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="modal-toolbar">
+          <ion-buttons slot="start">
+            <ion-button (click)="closeAltModal()" class="close-btn">
+              <ion-icon name="arrow-back-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>Alternatives</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="alt-content" *ngIf="selectedItem">
+        <!-- Original -->
+        <div class="alt-section">
+          <span class="alt-section-label">Original Plan</span>
+          <ion-card class="alt-original-card">
+            <div class="alt-original-accent" [style.background]="'var(--ion-color-' + selectedItem.color + ')'"></div>
+            <ion-card-content>
+              <div class="alt-original-header">
+                <ion-icon [name]="selectedItem.icon" [color]="selectedItem.color" class="alt-original-icon"></ion-icon>
+                <div>
+                  <span class="alt-original-title">{{ selectedItem.title }}</span>
+                  <span class="alt-original-time">{{ selectedItem.time }}</span>
+                </div>
+              </div>
+              <div class="alt-original-cost">
+                <span class="cost-amount">${{ selectedItem.estimatedCost | number:'1.2-2' }}</span>
+              </div>
+              <p class="alt-original-reason">{{ selectedItem.reason }}</p>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Alternatives -->
+        <div class="alt-section">
+          <span class="alt-section-label">AI Suggested Alternatives</span>
+          <ion-card class="alt-option-card" *ngFor="let alt of selectedItem.alternatives">
+            <ion-card-content>
+              <div class="alt-option-header">
+                <span class="alt-option-title">{{ alt.title }}</span>
+                <ion-badge *ngIf="!alt.weatherSuitable" color="warning" class="weather-warning">
+                  <ion-icon name="warning-outline"></ion-icon> Weather
+                </ion-badge>
+              </div>
+              <div class="alt-option-cost-row">
+                <span class="alt-cost">${{ alt.estimatedCost | number:'1.2-2' }}</span>
+                <span class="alt-savings" *ngIf="alt.savings > 0">
+                  <ion-icon name="arrow-down-outline"></ion-icon> Save ${{ alt.savings | number:'1.2-2' }}
+                </span>
+              </div>
+              <p class="alt-reason">{{ alt.reason }}</p>
+              <div class="alt-meta" *ngIf="alt.distance">
+                <ion-icon name="navigate-outline"></ion-icon>
+                <span>{{ alt.distance }}</span>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Keep Original CTA -->
+        <div class="alt-cta">
+          <ion-button expand="block" color="primary" (click)="addToCalendar(selectedItem)" class="cta-button">
+            <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+            Keep Original Plan
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

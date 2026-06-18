@@ -1,0 +1,107 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="detail-toolbar" [class.income]="transaction?.type === 'credit'">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/calendar" text="" icon="arrow-back-outline" class="back-btn"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Transaction</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="detail-content" *ngIf="transaction">
+  <!-- Amount Hero -->
+  <div class="amount-hero" [class.income]="transaction.type === 'credit'">
+    <div class="amount-hero-bg"></div>
+    <div class="amount-hero-content">
+      <div class="amount-icon">
+        <ion-icon [name]="getTransactionIcon(transaction.category)"></ion-icon>
+      </div>
+      <span class="amount-value">
+        {{ transaction.type === 'debit' ? '-' : '+' }}${{ transaction.amount | number:'1.2-2' }}
+      </span>
+      <ion-badge [color]="transaction.type === 'debit' ? 'danger' : 'success'" class="type-badge">
+        {{ transaction.type.toUpperCase() }}
+      </ion-badge>
+    </div>
+  </div>
+
+  <!-- Details Card -->
+  <ion-card class="details-card">
+    <ion-card-content>
+      <div class="detail-row">
+        <div class="detail-icon-wrap">
+          <ion-icon name="pricetag-outline" color="primary"></ion-icon>
+        </div>
+        <div class="detail-info">
+          <span class="detail-label">Description</span>
+          <span class="detail-value">{{ transaction.description }}</span>
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-icon-wrap">
+          <ion-icon name="grid-outline" color="primary"></ion-icon>
+        </div>
+        <div class="detail-info">
+          <span class="detail-label">Category</span>
+          <span class="detail-value">{{ transaction.category }}</span>
+          <ion-badge *ngIf="transaction.subcategory" color="medium" class="sub-badge">{{ transaction.subcategory }}</ion-badge>
+        </div>
+      </div>
+
+      <div class="detail-row">
+        <div class="detail-icon-wrap">
+          <ion-icon name="time-outline" color="primary"></ion-icon>
+        </div>
+        <div class="detail-info">
+          <span class="detail-label">Date & Time</span>
+          <span class="detail-value">{{ transaction.date }} at {{ transaction.time }}</span>
+        </div>
+      </div>
+
+      <div class="detail-row" *ngIf="transaction.merchant">
+        <div class="detail-icon-wrap">
+          <ion-icon name="storefront-outline" color="primary"></ion-icon>
+        </div>
+        <div class="detail-info">
+          <span class="detail-label">Merchant</span>
+          <span class="detail-value">{{ transaction.merchant }}</span>
+        </div>
+      </div>
+
+      <div class="detail-row" *ngIf="transaction.location">
+        <div class="detail-icon-wrap">
+          <ion-icon name="location-outline" color="primary"></ion-icon>
+        </div>
+        <div class="detail-info">
+          <span class="detail-label">Location</span>
+          <span class="detail-value">{{ transaction.location }}</span>
+        </div>
+      </div>
+
+      <div class="detail-row" *ngIf="transaction.paymentMethod">
+        <div class="detail-icon-wrap">
+          <ion-icon name="card-outline" color="primary"></ion-icon>
+        </div>
+        <div class="detail-info">
+          <span class="detail-label">Payment Method</span>
+          <span class="detail-value">{{ transaction.paymentMethod }}</span>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- AI Insight -->
+  <ion-card class="insight-card">
+    <ion-card-content>
+      <div class="insight-header">
+        <div class="insight-icon">
+          <ion-icon name="bulb" color="warning"></ion-icon>
+        </div>
+        <span class="insight-title">AI Insight</span>
+      </div>
+      <p class="insight-text">{{ getInsightText() }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <div style="height: 40px;"></div>
+</ion-content>

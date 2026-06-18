@@ -1,0 +1,249 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="explore-toolbar">
+    <ion-title>
+      <div class="toolbar-brand">
+        <div class="brand-logo">
+          <span class="logo-n">N</span>
+          <span class="logo-e">E</span>
+          <span class="logo-t">T</span>
+          <span class="logo-s">S</span>
+        </div>
+        <span class="toolbar-subtitle">Discover</span>
+      </div>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="explore-content">
+  <!-- Search -->
+  <div class="search-wrapper animate-fade-in-up">
+    <ion-searchbar [(ngModel)]="searchText" placeholder="Search events, activities..." class="explore-search"></ion-searchbar>
+  </div>
+
+  <!-- Location Pill -->
+  <div class="location-pill animate-fade-in-up stagger-1">
+    <ion-icon name="location" color="danger"></ion-icon>
+    <div class="location-info">
+      <span class="location-label">Your Location</span>
+      <span class="location-value">Clementi, Singapore</span>
+    </div>
+    <ion-button fill="clear" size="small" class="location-btn">
+      <ion-icon name="navigate-outline"></ion-icon>
+    </ion-button>
+  </div>
+
+  <!-- Tabs -->
+  <ion-segment [(ngModel)]="activeTab" class="explore-segment animate-fade-in-up stagger-2">
+    <ion-segment-button value="events">
+      <ion-icon name="musical-notes-outline"></ion-icon>
+      <ion-label>Events</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="activities">
+      <ion-icon name="compass-outline"></ion-icon>
+      <ion-label>For You</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- EVENTS -->
+  <div *ngIf="activeTab === 'events'" class="events-section">
+    <!-- Featured Event -->
+    <div class="featured-wrapper animate-fade-in-up stagger-3">
+      <div class="featured-label">
+        <ion-icon name="star" color="warning"></ion-icon>
+        <span>Featured Event</span>
+      </div>
+      <ion-card class="featured-card card-hover">
+        <div class="featured-image">
+          <div class="featured-overlay"></div>
+          <div class="featured-content">
+            <ion-badge color="danger" class="featured-sold">SOLD OUT</ion-badge>
+            <h2 class="featured-title">EXO PLANET #6</h2>
+            <p class="featured-subtitle">EXhOrizon in Singapore</p>
+            <div class="featured-meta">
+              <div class="featured-meta-item">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>24-26 July 2026</span>
+              </div>
+              <div class="featured-meta-item">
+                <ion-icon name="location-outline"></ion-icon>
+                <span>Singapore Indoor Stadium</span>
+              </div>
+            </div>
+            <div class="featured-price">From $298</div>
+          </div>
+        </div>
+      </ion-card>
+    </div>
+
+    <!-- Events List -->
+    <div class="events-list">
+      <h3 class="section-title animate-fade-in-up">Upcoming</h3>
+      <ion-card class="event-card card-hover" *ngFor="let event of events; let i = index" [style.animation-delay]="i * 0.05 + 's'">
+        <ion-card-content class="event-content">
+          <div class="event-header">
+            <ion-badge [color]="event.category === 'Concert' ? 'primary' : event.category === 'Classical' ? 'tertiary' : 'secondary'" class="event-category">
+              {{ event.category }}
+            </ion-badge>
+            <span class="event-date">{{ event.date }}</span>
+          </div>
+          <h4 class="event-title">{{ event.title }}</h4>
+          <div class="event-venue">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>{{ event.venue }}</span>
+          </div>
+          <p class="event-desc">{{ event.description }}</p>
+          <div class="event-footer">
+            <div class="event-tags">
+              <ion-chip *ngFor="let tag of event.tags.slice(0, 2)" outline color="medium" class="event-tag">{{ tag }}</ion-chip>
+            </div>
+            <span class="event-price" [class.free]="event.price === 0">
+              {{ event.price === 0 ? 'FREE' : '$' + event.price }}
+            </span>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- ACTIVITIES -->
+  <div *ngIf="activeTab === 'activities'" class="activities-section">
+    <div class="activities-header animate-fade-in-up">
+      <h3 class="section-title">Recommended For You</h3>
+      <p class="section-subtitle">Based on your spending patterns & location</p>
+    </div>
+
+    <ion-card class="activity-card card-hover" *ngFor="let activity of activities; let i = index" (click)="openActivity(activity)" [style.animation-delay]="i * 0.05 + 's'">
+      <ion-card-content class="activity-content">
+        <!-- Header -->
+        <div class="activity-header">
+          <div class="activity-title-block">
+            <span class="activity-title">{{ activity.title }}</span>
+            <span class="activity-category">{{ activity.category }}</span>
+          </div>
+          <div class="taste-match">
+            <div class="taste-circle" [class]="'taste-' + getTasteColor(activity.tasteMatch)">
+              <span class="taste-value">{{ activity.tasteMatch }}</span>
+              <span class="taste-label">%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <p class="activity-desc">{{ activity.description }}</p>
+
+        <!-- Meta -->
+        <div class="activity-meta">
+          <div class="meta-item">
+            <ion-icon name="location-outline" color="primary"></ion-icon>
+            <span>{{ activity.location }}</span>
+          </div>
+          <div class="meta-item">
+            <ion-icon name="wallet-outline" color="primary"></ion-icon>
+            <span>${{ activity.estimatedCost }}</span>
+          </div>
+          <div class="meta-item">
+            <ion-icon name="navigate-outline" color="primary"></ion-icon>
+            <span>{{ activity.distance }}</span>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="activity-tags">
+          <ion-chip *ngFor="let tag of activity.tags.slice(0, 3)" outline color="primary" class="activity-tag">{{ tag }}</ion-chip>
+        </div>
+
+        <!-- Taste Bar -->
+        <div class="taste-bar-container">
+          <div class="taste-bar-bg">
+            <div class="taste-bar-fill" [style.width.%]="activity.tasteMatch" [class]="'fill-' + getTasteColor(activity.tasteMatch)"></div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div style="height: 100px;"></div>
+
+  <!-- Activity Detail Modal -->
+  <ion-modal [isOpen]="showActivityModal" (didDismiss)="closeActivityModal()" class="activity-modal">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="modal-toolbar">
+          <ion-buttons slot="start">
+            <ion-button (click)="closeActivityModal()" class="close-btn">
+              <ion-icon name="arrow-back-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>Details</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="activity-detail-content" *ngIf="selectedActivity">
+        <!-- Hero -->
+        <div class="detail-hero">
+          <div class="detail-taste" [class]="'taste-' + getTasteColor(selectedActivity.tasteMatch)">
+            <span class="detail-taste-value">{{ selectedActivity.tasteMatch }}%</span>
+            <span class="detail-taste-label">Taste Match</span>
+          </div>
+          <h2 class="detail-title">{{ selectedActivity.title }}</h2>
+          <span class="detail-category">{{ selectedActivity.category }}</span>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="detail-info-grid">
+          <div class="info-card">
+            <ion-icon name="location-outline" color="primary"></ion-icon>
+            <span class="info-label">Location</span>
+            <span class="info-value">{{ selectedActivity.location }}</span>
+          </div>
+          <div class="info-card">
+            <ion-icon name="wallet-outline" color="primary"></ion-icon>
+            <span class="info-label">Cost</span>
+            <span class="info-value">${{ selectedActivity.estimatedCost }}</span>
+          </div>
+          <div class="info-card">
+            <ion-icon name="navigate-outline" color="primary"></ion-icon>
+            <span class="info-label">Distance</span>
+            <span class="info-value">{{ selectedActivity.distance }}</span>
+          </div>
+        </div>
+
+        <!-- Why Recommended -->
+        <div class="detail-section">
+          <h4 class="detail-section-title">
+            <ion-icon name="bulb" color="warning"></ion-icon>
+            Why We Recommend This
+          </h4>
+          <ion-card class="reason-card">
+            <ion-card-content>
+              <ion-icon name="trending-up-outline" color="success" class="reason-icon"></ion-icon>
+              <span>{{ getTasteMatchReason(selectedActivity) }}</span>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Description -->
+        <div class="detail-section">
+          <h4 class="detail-section-title">About</h4>
+          <p class="detail-desc">{{ selectedActivity.description }}</p>
+        </div>
+
+        <!-- Tags -->
+        <div class="detail-tags">
+          <ion-chip *ngFor="let tag of selectedActivity.tags" color="primary" class="detail-tag">{{ tag }}</ion-chip>
+        </div>
+
+        <!-- Actions -->
+        <div class="detail-actions">
+          <ion-button expand="block" color="primary" class="cta-button" (click)="addToCalendar()">
+            <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+            Add to My Calendar
+          </ion-button>
+          <ion-button expand="block" fill="outline" color="medium" class="secondary-btn">
+            <ion-icon name="map-outline" slot="start"></ion-icon>
+            Get Directions
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>
