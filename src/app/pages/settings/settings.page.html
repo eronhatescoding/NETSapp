@@ -1,0 +1,134 @@
+<ion-header class="ion-no-border settings-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="back()" class="back-btn">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="settings-title">Settings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="settings-content">
+
+  <!-- ── Profile card ────────────────────────────────────────── -->
+  <div class="profile-card">
+    <div class="profile-avatar">
+      <span class="avatar-initials">C</span>
+    </div>
+    <div class="profile-info">
+      <h2 class="profile-name">Calvin</h2>
+      <p class="profile-sub">240311C · NYP Student</p>
+    </div>
+  </div>
+
+  <!-- ── Developer Tools ────────────────────────────────────── -->
+  <div class="section">
+    <p class="section-label">Developer Tools</p>
+    <div class="settings-card">
+
+      <button class="settings-row" (click)="seedData()" [disabled]="isSeeding">
+        <div class="row-icon seed-icon">
+          <ion-icon name="flask-outline"></ion-icon>
+        </div>
+        <div class="row-text">
+          <span class="row-title">Seed demo data</span>
+          <span class="row-sub">Write 80+ realistic transactions to Firestore</span>
+        </div>
+        <ion-spinner *ngIf="isSeeding" name="crescent" class="row-spinner"></ion-spinner>
+        <ion-icon *ngIf="!isSeeding" name="chevron-forward-outline" class="row-chevron"></ion-icon>
+      </button>
+
+      <div class="row-divider"></div>
+
+      <button class="settings-row" (click)="exportDna()">
+        <div class="row-icon export-icon">
+          <ion-icon name="code-slash-outline"></ion-icon>
+        </div>
+        <div class="row-text">
+          <span class="row-title">Export DNA JSON</span>
+          <span class="row-sub">Copy affinity vector to clipboard for Eron</span>
+        </div>
+        <ion-icon name="copy-outline" class="row-chevron"></ion-icon>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ── App Settings (placeholders) ───────────────────────── -->
+  <div class="section">
+    <p class="section-label">App Settings</p>
+    <div class="settings-card">
+
+      <div class="settings-row static-row">
+        <div class="row-icon notif-icon">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </div>
+        <div class="row-text">
+          <span class="row-title">Notifications</span>
+          <span class="row-sub">Spending alerts and tips</span>
+        </div>
+        <ion-toggle [checked]="true" [disabled]="true" class="row-toggle"></ion-toggle>
+      </div>
+
+      <div class="row-divider"></div>
+
+      <div class="settings-row static-row">
+        <div class="row-icon privacy-icon">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+        </div>
+        <div class="row-text">
+          <span class="row-title">Privacy</span>
+          <span class="row-sub">Data sharing preferences</span>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="row-chevron muted"></ion-icon>
+      </div>
+
+      <div class="row-divider"></div>
+
+      <div class="settings-row static-row">
+        <div class="row-icon theme-icon">
+          <ion-icon name="color-palette-outline"></ion-icon>
+        </div>
+        <div class="row-text">
+          <span class="row-title">Appearance</span>
+          <span class="row-sub">Always light (NETS theme)</span>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="row-chevron muted"></ion-icon>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── About ──────────────────────────────────────────────── -->
+  <div class="section">
+    <p class="section-label">About</p>
+    <div class="settings-card">
+
+      <div class="settings-row static-row">
+        <div class="row-icon nets-icon">
+          <ion-icon name="card-outline"></ion-icon>
+        </div>
+        <div class="row-text">
+          <span class="row-title">NETS Consumer DNA</span>
+          <span class="row-sub">v1.0.0 · PolyFintech Hackathon 2026</span>
+        </div>
+      </div>
+
+      <div class="row-divider"></div>
+
+      <div class="settings-row static-row">
+        <div class="row-icon team-icon">
+          <ion-icon name="people-outline"></ion-icon>
+        </div>
+        <div class="row-text">
+          <span class="row-title">Team VIB3RS</span>
+          <span class="row-sub">Calvin · Eron</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="height: 80px;"></div>
+</ion-content>

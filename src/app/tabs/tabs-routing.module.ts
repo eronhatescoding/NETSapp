@@ -16,8 +16,16 @@ const routes: Routes = [
         loadChildren: () => import('../pages/explore/explore.module').then(m => m.ExplorePageModule)
       },
       {
-        path: 'insights',
+        path: 'dna',
         loadChildren: () => import('../pages/insights/insights.module').then(m => m.InsightsPageModule)
+      },
+      {
+        path: 'pay',
+        loadChildren: () => import('../pages/pay/pay.module').then(m => m.PayPageModule)
+      },
+      {
+        path: 'settings',
+        loadChildren: () => import('../pages/settings/settings.module').then(m => m.SettingsPageModule)
       },
       {
         path: '',

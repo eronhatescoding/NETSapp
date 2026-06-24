@@ -11,6 +11,10 @@ export interface Transaction {
   location?: string;
   paymentMethod?: string;
   weatherCondition?: 'sunny' | 'rainy' | 'cloudy' | 'stormy';
+  // DNA extensions — optional so existing hardcoded transactions still typecheck
+  tags?: string[];
+  merchantId?: string;
+  userId?: string;
 }
 
 export interface SpendingPattern {
@@ -70,4 +74,69 @@ export interface Alternative {
   savings: number;
   reason: string;
   weatherSuitable: boolean;
+}
+
+// ─────────────────────────────────────────────────────────────
+// CALVIN'S DNA EXTENSIONS — do not modify existing types above
+// ─────────────────────────────────────────────────────────────
+
+export type Category =
+  | 'Food & Beverage'
+  | 'Shopping'
+  | 'Entertainment'
+  | 'Education'
+  | 'Fitness'
+  | 'Transport'
+  | 'Lifestyle & Services'
+  | 'Income';
+
+export interface Merchant {
+  id: string;
+  name: string;
+  category: Category;
+  tags: string[];       // namespaced: "fnb:bubbletea", "shopping:fashion"
+  typicalAmount: number;
+  icon?: string;        // ionicon name
+}
+
+export interface TagAffinity {
+  tag: string;
+  weight: number;       // 0..1 normalised
+  count: number;        // number of transactions carrying this tag
+  totalSpend: number;
+  lastSeen: string;     // ISO date string (YYYY-MM-DD)
+}
+
+export interface Persona {
+  id: string;
+  name: string;         // e.g. "Bubble Tea Royalty"
+  emoji: string;
+  description: string;  // one-line copy shown on the Wrapped card
+  color: string;        // hex — used as card accent
+  triggerTags: string[]; // tags that activate this persona (top-N match)
+  // FUTURE: behaviouralType?: 'decision-maker' | 'loyal' | 'actively-buying'
+  //         Add when behavioural-persona layer is implemented.
+}
+
+export interface UserDNA {
+  userId: string;
+  generatedAt: string;  // ISO date string
+  totals: {
+    spent: number;
+    income: number;
+    txnCount: number;
+  };
+  categoryBreakdown: {
+    category: Category;
+    amount: number;
+    pct: number;
+  }[];
+  topMerchants: {
+    merchantId: string;
+    name: string;
+    count: number;
+    spend: number;
+  }[];
+  affinityVector: TagAffinity[];  // Eron consumes this
+  personas: Persona[];            // drives the Wrapped
 }

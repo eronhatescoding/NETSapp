@@ -35,3 +35,13 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+// Full-screen modal for Concierge Wrapped — scoped by class, not global
+.wrapped-modal {
+  --height: 100%;
+  --width: 100%;
+  --border-radius: 0;
+  --max-height: 100%;
+  --overflow: hidden;
+  --box-shadow: none;
+}

@@ -1,110 +1,166 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="insights-toolbar">
-    <ion-title>
-      <div class="toolbar-brand">
-        <div class="brand-logo">
-          <span class="logo-n">N</span>
-          <span class="logo-e">E</span>
-          <span class="logo-t">T</span>
-          <span class="logo-s">S</span>
-        </div>
-        <span class="toolbar-subtitle">Insights</span>
-      </div>
-    </ion-title>
+<ion-header class="ion-no-border dna-header">
+  <ion-toolbar>
+    <div class="header-brand" slot="start">
+      <img src="assets/nets-logo.png" alt="NETS" class="nets-logo-img">
+    </div>
+    <ion-buttons slot="end">
+      <ion-button (click)="goToSettings()" class="settings-btn">
+        <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="insights-content">
-  <!-- Hero Stats -->
-  <div class="insights-hero">
-    <div class="hero-bg"></div>
-    <div class="hero-content">
-      <h2 class="hero-title">Your Consumer DNA</h2>
-      <p class="hero-subtitle">{{ patterns.length }} patterns detected from your transaction history</p>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <span class="hero-stat-value">${{ monthStats.totalSpent | number:'1.0-0' }}</span>
-          <span class="hero-stat-label">Spent</span>
+<ion-content class="dna-content">
+  <ng-container *ngIf="dna$ | async as dna; else loading">
+
+    <!-- ── Profile block ─────────────────────────────────── -->
+    <div class="profile-section animate-fade-in">
+      <div class="avatar">
+        <span class="avatar-initials">C</span>
+      </div>
+      <h1 class="profile-name">Calvin</h1>
+      <p class="profile-sub">Your Consumer DNA</p>
+
+      <!-- Persona chips -->
+      <div class="persona-chips" *ngIf="dna.personas.length > 0">
+        <div
+          class="persona-chip"
+          *ngFor="let p of dna.personas"
+          [style.background]="p.color + '18'"
+          [style.border-color]="p.color + '55'">
+          <span class="chip-emoji">{{ p.emoji }}</span>
+          <span class="chip-name" [style.color]="p.color">{{ p.name }}</span>
         </div>
-        <div class="hero-stat-divider"></div>
-        <div class="hero-stat">
-          <span class="hero-stat-value">${{ monthStats.totalIncome | number:'1.0-0' }}</span>
-          <span class="hero-stat-label">Income</span>
-        </div>
-        <div class="hero-stat-divider"></div>
-        <div class="hero-stat">
-          <span class="hero-stat-value">{{ monthStats.transactionCount }}</span>
-          <span class="hero-stat-label">Txns</span>
+      </div>
+      <div class="persona-placeholder" *ngIf="dna.personas.length === 0">
+        <p class="placeholder-hint">Pay more to unlock your personas ✨</p>
+      </div>
+    </div>
+
+    <!-- ── Stats card ────────────────────────────────────── -->
+    <div class="stats-card">
+      <div class="stat">
+        <span class="stat-value">${{ dna.totals.spent | number:'1.0-0' }}</span>
+        <span class="stat-label">Spent</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value">${{ dna.totals.income | number:'1.0-0' }}</span>
+        <span class="stat-label">Income</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value">{{ dna.totals.txnCount }}</span>
+        <span class="stat-label">Txns</span>
+      </div>
+    </div>
+
+    <!-- ── Wrapped CTA ───────────────────────────────────── -->
+    <div class="wrapped-cta-section">
+      <button class="wrapped-btn" (click)="openWrapped()">
+        <ion-icon name="sparkles-outline"></ion-icon>
+        <span>See your Wrapped</span>
+        <ion-icon name="chevron-forward-outline" class="chevron"></ion-icon>
+      </button>
+    </div>
+
+    <!-- ── Category breakdown ────────────────────────────── -->
+    <div class="section" *ngIf="dna.categoryBreakdown.length > 0">
+      <h3 class="section-title">Category Breakdown</h3>
+      <div class="card">
+        <div
+          class="breakdown-item"
+          *ngFor="let cat of dna.categoryBreakdown; let i = index">
+          <div class="breakdown-row">
+            <ion-icon
+              [name]="getCategoryIcon(cat.category)"
+              class="cat-icon"
+              [class.cat-icon-top]="i === 0">
+            </ion-icon>
+            <span class="breakdown-name">{{ cat.category }}</span>
+            <span class="breakdown-pct" [class.pct-top]="i === 0">{{ cat.pct | number:'1.0-0' }}%</span>
+            <span class="breakdown-amt">${{ cat.amount | number:'1.0-0' }}</span>
+          </div>
+          <div class="progress-track">
+            <div
+              class="progress-fill"
+              [style.width.%]="cat.pct"
+              [class.fill-red]="i === 0">
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Patterns List -->
-  <div class="patterns-section">
-    <h3 class="section-title">Detected Patterns</h3>
-    <ion-card class="pattern-card card-hover" *ngFor="let p of patterns; let i = index" [style.animation-delay]="i * 0.06 + 's'">
-      <div class="pattern-accent" [class]="'accent-' + (p.confidence >= 80 ? 'high' : p.confidence >= 60 ? 'medium' : 'low')"></div>
-      <ion-card-content class="pattern-content">
-        <div class="pattern-header">
+    <!-- ── Top merchants ─────────────────────────────────── -->
+    <div class="section" *ngIf="dna.topMerchants.length > 0">
+      <h3 class="section-title">Top Merchants</h3>
+      <div class="card card-flush">
+        <div
+          class="merchant-row"
+          *ngFor="let m of dna.topMerchants | slice:0:5; let i = index">
+          <span class="merchant-rank">{{ i + 1 }}</span>
+          <div class="merchant-icon-wrap">
+            <ion-icon [name]="getMerchantIcon(m.merchantId)"></ion-icon>
+          </div>
+          <div class="merchant-info">
+            <span class="merchant-name">{{ m.name }}</span>
+            <span class="merchant-meta">{{ m.count }}x visits</span>
+          </div>
+          <span class="merchant-spend">${{ m.spend | number:'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Affinity highlights ───────────────────────────── -->
+    <div class="section" *ngIf="dna.affinityVector.length > 0">
+      <h3 class="section-title">Your Affinities</h3>
+      <div class="card">
+        <div
+          class="affinity-item"
+          *ngFor="let a of dna.affinityVector | slice:0:8">
+          <div class="affinity-row">
+            <span class="affinity-tag">{{ formatTag(a.tag) }}</span>
+            <span class="affinity-weight">{{ (a.weight * 100) | number:'1.0-0' }}</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill fill-blue" [style.width.%]="a.weight * 100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Detected patterns (compact) ──────────────────── -->
+    <div class="section" *ngIf="patterns.length > 0">
+      <h3 class="section-title">Detected Patterns</h3>
+      <div class="card card-flush">
+        <div class="pattern-row" *ngFor="let p of patterns">
           <div class="pattern-icon-wrap">
-            <ion-icon [name]="getPatternIcon(p.subcategory)" [color]="p.confidence >= 80 ? 'success' : 'primary'"></ion-icon>
+            <ion-icon [name]="getPatternIcon(p.subcategory)"></ion-icon>
           </div>
-          <div class="pattern-title-block">
+          <div class="pattern-info">
             <span class="pattern-name">{{ p.subcategory || p.category }}</span>
-            <span class="pattern-freq">{{ p.frequency }} habit</span>
+            <span class="pattern-meta">{{ p.frequency }} · {{ p.typicalTimeRange }}</span>
           </div>
-          <div class="pattern-confidence">
-            <span class="conf-value">{{ p.confidence }}%</span>
-            <span class="conf-label">match</span>
-          </div>
-        </div>
-
-        <div class="pattern-details">
-          <div class="detail-chip">
-            <ion-icon name="time-outline"></ion-icon>
-            <span>{{ p.typicalTimeRange }}</span>
-          </div>
-          <div class="detail-chip">
-            <ion-icon name="cash-outline"></ion-icon>
-            <span>${{ p.typicalAmount | number:'1.2-2' }}</span>
-          </div>
-          <div class="detail-chip" *ngIf="p.weatherPreference && p.weatherPreference !== 'any'">
-            <ion-icon [name]="getWeatherIcon(p.weatherPreference)"></ion-icon>
-            <span>{{ p.weatherPreference }}</span>
+          <div class="pattern-right">
+            <span class="streak-badge" *ngIf="p.streakCount >= 3">
+              🔥 {{ p.streakCount }}
+            </span>
+            <span class="pattern-conf">{{ p.confidence }}%</span>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div class="pattern-footer">
-          <div class="streak-bar">
-            <div class="streak-fill" [style.width.%]="min(p.streakCount * 20, 100)"></div>
-          </div>
-          <span class="streak-label">{{ p.streakCount }} day streak</span>
-        </div>
-      </ion-card-content>
-    </ion-card>
-  </div>
+    <div style="height: 100px;"></div>
+  </ng-container>
 
-  <!-- Category Breakdown -->
-  <div class="breakdown-section">
-    <h3 class="section-title">Category Breakdown</h3>
-    <ion-card class="breakdown-card">
-      <ion-card-content>
-        <div class="breakdown-item" *ngFor="let cat of categoryBreakdown; let i = index">
-          <div class="breakdown-header">
-            <span class="breakdown-name">{{ cat.name }}</span>
-            <span class="breakdown-amount">${{ cat.amount | number:'1.2-2' }}</span>
-          </div>
-          <div class="breakdown-bar-bg">
-            <div class="breakdown-bar-fill" [style.width.%]="(cat.amount / monthStats.totalSpent) * 100"
-                 [style.background]="'linear-gradient(90deg, hsl(' + (i * 50 + 200) + ', 70%, 45%), hsl(' + (i * 50 + 200) + ', 70%, 55%))'">
-            </div>
-          </div>
-          <span class="breakdown-percent">{{ (cat.amount / monthStats.totalSpent * 100) | number:'1.0-0' }}%</span>
-        </div>
-      </ion-card-content>
-    </ion-card>
-  </div>
-
-  <div style="height: 100px;"></div>
+  <!-- Loading skeleton -->
+  <ng-template #loading>
+    <div class="loading-state">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Building your DNA…</p>
+    </div>
+  </ng-template>
 </ion-content>

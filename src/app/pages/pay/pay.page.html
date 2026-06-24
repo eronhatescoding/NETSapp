@@ -1,0 +1,185 @@
+<ion-header class="ion-no-border pay-header">
+  <ion-toolbar>
+    <!-- Back arrow shown only on confirming screen -->
+    <ion-buttons slot="start" *ngIf="phase === 'confirming'">
+      <ion-button (click)="backToSelect()" class="back-btn">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title class="pay-title">
+      <img src="assets/nets-logo.png" alt="NETS" class="nets-logo-img">
+      <span class="pay-label">Pay</span>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="pay-content">
+
+  <!-- ══════════════════════════════════════════════════
+       PHASE: selecting — merchant picker
+  ══════════════════════════════════════════════════ -->
+  <ng-container *ngIf="phase === 'selecting'">
+
+    <div class="search-bar-wrap">
+      <div class="search-field">
+        <ion-icon name="search-outline" class="search-icon"></ion-icon>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search merchants…"
+          [(ngModel)]="searchQuery"
+          autocomplete="off">
+        <ion-icon
+          name="close-circle"
+          class="search-clear"
+          *ngIf="searchQuery"
+          (click)="searchQuery = ''">
+        </ion-icon>
+      </div>
+    </div>
+
+    <div class="merchant-list">
+      <ng-container *ngFor="let group of groupedMerchants">
+        <div class="group-header">
+          <ion-icon [name]="getCategoryIcon(group.category)" class="group-icon"></ion-icon>
+          <span>{{ group.category }}</span>
+        </div>
+
+        <div class="merchant-grid">
+          <button
+            class="merchant-card"
+            *ngFor="let m of group.merchants"
+            (click)="selectMerchant(m)">
+            <div class="mc-icon">
+              <ion-icon [name]="m.icon || 'storefront-outline'"></ion-icon>
+            </div>
+            <span class="mc-name">{{ m.name }}</span>
+            <span class="mc-amount">${{ m.typicalAmount | number:'1.2-2' }}</span>
+          </button>
+        </div>
+      </ng-container>
+
+      <div class="no-results" *ngIf="groupedMerchants.length === 0">
+        <ion-icon name="search-outline"></ion-icon>
+        <p>No merchants found</p>
+      </div>
+    </div>
+
+    <div style="height: 80px;"></div>
+  </ng-container>
+
+
+  <!-- ══════════════════════════════════════════════════
+       PHASE: confirming / paying — payment screen
+  ══════════════════════════════════════════════════ -->
+  <ng-container *ngIf="phase === 'confirming' || phase === 'paying'">
+    <div class="payment-screen">
+
+      <!-- Merchant identity -->
+      <div class="pay-merchant-card" *ngIf="selectedMerchant">
+        <div class="pay-merchant-icon">
+          <ion-icon [name]="selectedMerchant.icon || 'storefront-outline'"></ion-icon>
+        </div>
+        <h2 class="pay-merchant-name">{{ selectedMerchant.name }}</h2>
+        <p class="pay-merchant-cat">{{ selectedMerchant.category }}</p>
+      </div>
+
+      <!-- Amount input -->
+      <div class="amount-section">
+        <p class="amount-label">Enter amount</p>
+
+        <div class="amount-field" [class.amount-field-error]="!!amountError">
+          <span class="currency-sym">$</span>
+          <input
+            class="amount-input"
+            type="text"
+            inputmode="decimal"
+            placeholder="0.00"
+            [(ngModel)]="amountStr"
+            [disabled]="phase === 'paying'"
+            autocomplete="off">
+        </div>
+
+        <p class="amount-error" *ngIf="amountError">{{ amountError }}</p>
+        <p class="amount-hint" *ngIf="!amountError && selectedMerchant">
+          Typical: ${{ selectedMerchant.typicalAmount | number:'1.2-2' }}
+        </p>
+      </div>
+
+      <!-- Payment method badge -->
+      <div class="payment-method-badge">
+        <ion-icon name="card-outline"></ion-icon>
+        <span>NETS Pay</span>
+      </div>
+
+      <!-- Pay button -->
+      <div class="pay-btn-wrap">
+        <button
+          class="pay-btn"
+          [class.pay-btn-disabled]="!canPay"
+          [disabled]="!canPay"
+          (click)="pay()">
+          <ion-spinner name="crescent" *ngIf="phase === 'paying'" class="pay-spinner"></ion-spinner>
+          <ng-container *ngIf="phase !== 'paying'">
+            <ion-icon name="card-outline"></ion-icon>
+            <span>Pay ${{ parsedAmount > 0 ? (parsedAmount | number:'1.2-2') : '—' }}</span>
+          </ng-container>
+          <ng-container *ngIf="phase === 'paying'">
+            <span>Processing…</span>
+          </ng-container>
+        </button>
+
+        <p class="pay-disclaimer">
+          This is a simulated NETS payment for demo purposes only.
+        </p>
+      </div>
+
+    </div>
+  </ng-container>
+
+
+  <!-- ══════════════════════════════════════════════════
+       PHASE: success
+  ══════════════════════════════════════════════════ -->
+  <ng-container *ngIf="phase === 'success' && lastTxn">
+    <div class="success-screen">
+
+      <div class="success-icon-wrap">
+        <div class="success-ring"></div>
+        <ion-icon name="checkmark-outline" class="success-check"></ion-icon>
+      </div>
+
+      <h2 class="success-title">Payment Sent!</h2>
+      <p class="success-sub">Your DNA has been updated.</p>
+
+      <div class="success-receipt">
+        <div class="receipt-row">
+          <span class="receipt-label">Merchant</span>
+          <span class="receipt-value">{{ lastTxn.merchant }}</span>
+        </div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-row">
+          <span class="receipt-label">Amount</span>
+          <span class="receipt-value receipt-amount">${{ lastTxn.amount | number:'1.2-2' }}</span>
+        </div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-row">
+          <span class="receipt-label">Method</span>
+          <span class="receipt-value">NETS Pay</span>
+        </div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-row">
+          <span class="receipt-label">Time</span>
+          <span class="receipt-value">{{ lastTxn.time }}</span>
+        </div>
+      </div>
+
+      <button class="another-btn" (click)="reset()">
+        Make another payment
+      </button>
+
+    </div>
+  </ng-container>
+
+</ion-content>
