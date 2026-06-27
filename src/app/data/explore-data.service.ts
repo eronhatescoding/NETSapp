@@ -1,152 +1,239 @@
 import { Injectable } from '@angular/core';
 import { Event, Activity } from '../models/explore.model';
+import { UserDnaService } from './user-dna.service';
+import { TicketmasterApiService } from './ticketmaster-api.service';
+import { Observable, BehaviorSubject, combineLatest, of } from 'rxjs';
+import { map, shareReplay, switchMap, catchError } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class ExploreDataService {
 
-  private events: Event[] = [
-    {
-      id: 'e1', title: 'NMIXX CHANGE UP : MIXX LAB', category: 'Concert',
-      date: '28 June 2026', venue: 'Singapore Indoor Stadium',
-      description: 'K-pop girl group NMIXX brings their explosive energy to Singapore for the first time! Expect high-octane performances of "Love Me Like This" and "DASH".',
-      price: 168, tags: ['K-pop', 'Live Music', 'Dance'], isFeatured: false
-    },
-    {
-      id: 'e2', title: 'The Kid LAROI: The First Time Tour', category: 'Concert',
-      date: '5 July 2026', venue: 'Star Theatre',
-      description: 'Australian pop sensation The Kid LAROI performs hits from his debut album including "Stay" and "Without You".',
-      price: 128, tags: ['Pop', 'Hip-Hop', 'Live Music'], isFeatured: false
-    },
-    {
-      id: 'e3', title: 'IRENE: Like A Flower Fanmeet', category: 'Fanmeet',
-      date: '12 July 2026', venue: 'The Star Performing Arts Centre',
-      description: 'Red Velvet\'s IRENE hosts an intimate fanmeet with games, performances, and Q&A sessions with lucky fans.',
-      price: 188, tags: ['K-pop', 'Fanmeet', 'Red Velvet'], isFeatured: false
-    },
-    {
-      id: 'e4', title: 'EXO PLANET #6: EXhOrizon', category: 'Concert',
-      date: '24-26 July 2026', venue: 'Singapore Indoor Stadium',
-      description: 'EXO returns to Singapore for a 3-night spectacular! All 8 members performing their greatest hits plus new tracks from EXIST.',
-      price: 298, tags: ['K-pop', 'Sold Out', 'Legendary'], isFeatured: true
-    },
-    {
-      id: 'e5', title: 'Singapore International Piano Festival', category: 'Classical',
-      date: '18-20 July 2026', venue: 'Esplanade Concert Hall',
-      description: 'World-class pianists perform Rachmaninoff, Chopin, and contemporary works over three evenings.',
-      price: 65, tags: ['Classical', 'Piano', 'Esplanade'], isFeatured: false
-    },
-    {
-      id: 'e6', title: 'Broadway Beng: The Musical', category: 'Theatre',
-      date: '8-15 Aug 2026', venue: 'Victoria Theatre',
-      description: 'Hilarious Hokkien-English musical comedy starring Sebastian Tan. A Singapore classic returns!',
-      price: 55, tags: ['Comedy', 'Musical', 'Local'], isFeatured: false
-    },
-    {
-      id: 'e7', title: 'Singapore Food Festival 2026', category: 'Festival',
-      date: '1-31 July 2026', venue: 'Various Locations',
-      description: 'Month-long celebration of Singapore\'s hawker culture with special menus, food tours, and chef collaborations.',
-      price: 0, tags: ['Food', 'Festival', 'Free Entry'], isFeatured: false
-    },
-    {
-      id: 'e8', title: 'Future World: ArtScience Museum', category: 'Exhibition',
-      date: 'Ongoing', venue: 'Marina Bay Sands',
-      description: 'Immersive digital art installation by teamLab. Walk through waterfalls of light and interactive gardens.',
-      price: 18, tags: ['Art', 'Digital', 'Interactive'], isFeatured: false
-    }
-  ];
+  private loadingSubject = new BehaviorSubject<boolean>(true);
+  public loading$ = this.loadingSubject.asObservable();
 
+  private eventsSubject = new BehaviorSubject<Event[]>([]);
+  public events$: Observable<Event[]> = this.eventsSubject.asObservable();
+
+  public scoredEvents$: Observable<Event[]>;
+  public scoredActivities$: Observable<Activity[]>;
+
+  // Hardcoded activities (local recommendations)
   private activities: Activity[] = [
     {
       id: 'a1', title: 'PPP Coffee Roasters Workshop', category: 'Workshop',
-      description: 'Learn latte art and coffee brewing from champion baristas. Perfect for your coffee obsession!',
+      description: 'Learn latte art from champion baristas.',
       location: 'Star Vista', distance: '0.8km', estimatedCost: 45,
-      tasteMatch: 94, tags: ['Coffee', 'Workshop', 'Hands-on'],
-      weatherSuitable: ['any'], isIndoor: true, timeOfDay: 'morning'
+      tags: ['fnb:coffee', 'fnb:cafe', 'fnb:workshop'],
+      weatherSuitable: ['any'], isIndoor: true, timeOfDay: 'morning',
+      merchantId: 'ppp-coffee'
     },
     {
-      id: 'a2', title: 'ActiveSG Gym Pass (Monthly)', category: 'Fitness',
-      description: 'Unlimited gym access at Clementi Stadium. Your Tuesday/Thursday ritual spot.',
+      id: 'a2', title: 'ActiveSG Gym Pass', category: 'Fitness',
+      description: 'Unlimited gym access at Clementi Stadium.',
       location: 'Clementi Stadium', distance: '0.5km', estimatedCost: 25,
-      tasteMatch: 91, tags: ['Gym', 'Fitness', 'Routine'],
-      weatherSuitable: ['any', 'sunny', 'rainy', 'cloudy'], isIndoor: true, timeOfDay: 'afternoon'
+      tags: ['fit:gym', 'fit:fitness', 'fit:routine'],
+      weatherSuitable: ['any'], isIndoor: true, timeOfDay: 'afternoon',
+      merchantId: 'activesg'
     },
     {
-      id: 'a3', title: 'Ramen Food Tour: Clementi to Jurong', category: 'Food Tour',
-      description: 'Guided walking tour of the best ramen spots from Clementi to Jurong East. Includes 4 tastings!',
-      location: 'Clementi → Jurong', distance: '3km', estimatedCost: 35,
-      tasteMatch: 88, tags: ['Ramen', 'Food Tour', 'Walking'],
-      weatherSuitable: ['sunny', 'cloudy'], isIndoor: false, timeOfDay: 'afternoon'
-    },
-    {
-      id: 'a4', title: 'Hawker Heritage Walk', category: 'Cultural',
-      description: 'Guided tour of Clementi 448 Market with tastings of chicken rice, nasi lemak, and ban mian.',
+      id: 'a3', title: 'Hawker Heritage Walk', category: 'Cultural',
+      description: 'Guided tour of Clementi 448 Market with tastings.',
       location: 'Clementi 448', distance: '0.3km', estimatedCost: 15,
-      tasteMatch: 95, tags: ['Hawker', 'Local', 'Food'],
-      weatherSuitable: ['sunny', 'cloudy', 'any'], isIndoor: false, timeOfDay: 'morning'
+      tags: ['fnb:hawker', 'fnb:local', 'fnb:food'],
+      weatherSuitable: ['sunny', 'cloudy', 'any'], isIndoor: false, timeOfDay: 'morning',
+      merchantId: 'hawker-heritage'
     },
     {
-      id: 'a5', title: 'Clementi Park Cycling Loop', category: 'Outdoor',
-      description: 'Scenic 10km cycling route around Clementi Park and Ulu Pandan. Bike rental included.',
-      location: 'Clementi Park', distance: '1.2km', estimatedCost: 12,
-      tasteMatch: 72, tags: ['Cycling', 'Nature', 'Exercise'],
-      weatherSuitable: ['sunny', 'cloudy'], isIndoor: false, timeOfDay: 'morning'
-    },
-    {
-      id: 'a6', title: 'Seoul Yummy K-BBQ Experience', category: 'Dining',
-      description: 'All-you-can-eat Korean BBQ with banchan buffet. Your Wednesday dinner favorite!',
+      id: 'a4', title: 'Seoul Yummy K-BBQ Experience', category: 'Dining',
+      description: 'All-you-can-eat Korean BBQ with banchan buffet.',
       location: 'JEM', distance: '2.5km', estimatedCost: 28,
-      tasteMatch: 89, tags: ['Korean', 'BBQ', 'Buffet'],
-      weatherSuitable: ['any', 'sunny', 'rainy', 'cloudy'], isIndoor: true, timeOfDay: 'evening'
+      tags: ['fnb:korean', 'fnb:bbq', 'fnb:buffet'],
+      weatherSuitable: ['any'], isIndoor: true, timeOfDay: 'evening',
+      merchantId: 'seoul-yummy'
     },
     {
-      id: 'a7', title: 'Zouk Singapore: Saturday Night', category: 'Nightlife',
-      description: 'Asia\'s iconic nightclub. Saturday night entry with 2 drinks included.',
+      id: 'a5', title: 'Zouk Singapore: Saturday Night', category: 'Nightlife',
+      description: "Asia's iconic nightclub. Saturday entry with 2 drinks.",
       location: 'Clarke Quay', distance: '6km', estimatedCost: 45,
-      tasteMatch: 68, tags: ['Clubbing', 'Nightlife', 'Music'],
-      weatherSuitable: ['any', 'sunny', 'rainy', 'cloudy'], isIndoor: true, timeOfDay: 'evening'
-    },
-    {
-      id: 'a8', title: 'Cooking Class: Hawker Favorites', category: 'Workshop',
-      description: 'Learn to cook chicken rice, nasi lemak, and fishball noodles from a hawker uncle!',
-      location: 'Palate Sensations', distance: '4km', estimatedCost: 65,
-      tasteMatch: 82, tags: ['Cooking', 'Hawker', 'Skills'],
-      weatherSuitable: ['any'], isIndoor: true, timeOfDay: 'afternoon'
-    },
-    {
-      id: 'a9', title: 'NUS Library Study Session', category: 'Study',
-      description: 'Quiet study spot at Central Library with cafe access. Perfect for exam season.',
-      location: 'NUS Kent Ridge', distance: '1.5km', estimatedCost: 5,
-      tasteMatch: 76, tags: ['Study', 'Quiet', 'Productive'],
-      weatherSuitable: ['any', 'sunny', 'rainy', 'cloudy'], isIndoor: true, timeOfDay: 'any'
-    },
-    {
-      id: 'a10', title: 'Trapped Escape Room: The Haunting', category: 'Entertainment',
-      description: 'Horror-themed escape room at Bugis. 60 minutes to solve the mystery and escape!',
-      location: 'Bugis', distance: '5km', estimatedCost: 25,
-      tasteMatch: 71, tags: ['Escape Room', 'Thriller', 'Team'],
-      weatherSuitable: ['any'], isIndoor: true, timeOfDay: 'afternoon'
-    },
-    {
-      id: 'a11', title: 'Botanic Gardens Morning Walk', category: 'Nature',
-      description: 'Guided nature walk through UNESCO World Heritage Site. Free entry, paid tour.',
-      location: 'Botanic Gardens', distance: '3km', estimatedCost: 8,
-      tasteMatch: 85, tags: ['Nature', 'Walking', 'Free'],
-      weatherSuitable: ['sunny', 'cloudy'], isIndoor: false, timeOfDay: 'morning'
-    },
-    {
-      id: 'a12', title: 'Toast Box: Kopi & Kaya Loyalty', category: 'Food',
-      description: 'Your Tuesday morning spot! Collect stamps for a free kaya toast set on your 10th visit.',
-      location: 'Clementi Mall', distance: '0.4km', estimatedCost: 4.50,
-      tasteMatch: 93, tags: ['Breakfast', 'Local', 'Loyalty'],
-      weatherSuitable: ['any', 'sunny', 'rainy', 'cloudy'], isIndoor: true, timeOfDay: 'morning'
+      tags: ['ent:clubbing', 'ent:nightlife', 'ent:music'],
+      weatherSuitable: ['any'], isIndoor: true, timeOfDay: 'evening',
+      merchantId: 'zouk'
     }
   ];
 
-  getEvents(): Event[] { return [...this.events]; }
-  getActivities(): Activity[] { return [...this.activities]; }
+  constructor(
+    private userDnaService: UserDnaService,
+    private ticketmasterApi: TicketmasterApiService
+  ) {
+    // Load events from Ticketmaster on service init
+    this.loadEvents();
 
-  getActivityById(id: string): Activity | undefined {
-    return this.activities.find(a => a.id === id);
+    // Score events with live DNA
+    this.scoredEvents$ = combineLatest([
+      this.events$,
+      this.userDnaService.dna$
+    ]).pipe(
+      map(([events, dna]) => this.scoreEvents(events, dna)),
+      shareReplay(1)
+    );
+
+    // Score activities with live DNA
+    this.scoredActivities$ = combineLatest([
+      of(this.activities),
+      this.userDnaService.dna$
+    ]).pipe(
+      map(([activities, dna]) => this.scoreActivities(activities, dna)),
+      shareReplay(1)
+    );
+  }
+
+  private async loadEvents(): Promise<void> {
+    this.loadingSubject.next(true);
+    const events = await this.ticketmasterApi.getSingaporeEvents();
+    this.eventsSubject.next(events);
+    this.loadingSubject.next(false);
+  }
+
+  /**
+   * Score events using DNA affinity vector
+   */
+  private scoreEvents(events: Event[], dna: any): Event[] {
+    if (!dna || !dna.affinityVector || dna.affinityVector.length === 0) {
+      return events.map(event => ({ 
+        ...event, 
+        dnaMatch: 0, 
+        matchReason: 'Complete a few transactions to get personalized scores' 
+      }));
+    }
+
+    const affinityMap = new Map<string, number>();
+    dna.affinityVector.forEach((a: any) => affinityMap.set(a.tag, a.weight));
+
+    return events.map(event => {
+      let rawScore = 0;
+      const matchedTags: string[] = [];
+      let maxWeight = 0;
+
+      event.tags.forEach(tag => {
+        const weight = affinityMap.get(tag);
+        if (weight) {
+          rawScore += weight;
+          matchedTags.push(tag);
+          if (weight > maxWeight) maxWeight = weight;
+        }
+      });
+
+      // Base score: strongest single match * 100 (0.3 → 30%, 0.8 → 80%)
+      let dnaScore = Math.round(maxWeight * 100);
+      
+      // Bonus: +10% for each additional matching tag (up to +30%)
+      const tagBonus = Math.min((matchedTags.length - 1) * 10, 30);
+      dnaScore = Math.min(dnaScore + tagBonus, 100);
+
+      const reason = this.buildMatchReason(matchedTags, dna, event, false);
+
+      return {
+        ...event,
+        dnaMatch: dnaScore,
+        matchReason: reason
+      };
+    }).sort((a, b) => (b.dnaMatch || 0) - (a.dnaMatch || 0));
+  }
+
+  /**
+   * Score activities with novelty filter
+   */
+  private scoreActivities(activities: Activity[], dna: any): Activity[] {
+    if (!dna || !dna.affinityVector || dna.affinityVector.length === 0) {
+      return activities.map(activity => ({ 
+        ...activity, 
+        dnaMatch: 0, 
+        matchReason: 'Complete a few transactions to get personalized scores' 
+      }));
+    }
+
+    const affinityMap = new Map<string, number>();
+    dna.affinityVector.forEach((a: any) => affinityMap.set(a.tag, a.weight));
+
+    const topMerchantIds = new Set((dna.topMerchants || []).map((m: any) => m.id));
+
+    return activities.map(activity => {
+      let rawScore = 0;
+      const matchedTags: string[] = [];
+
+      activity.tags.forEach(tag => {
+        const weight = affinityMap.get(tag);
+        if (weight) {
+          rawScore += weight;
+          matchedTags.push(tag);
+        }
+      });
+
+      let dnaScore = Math.min(Math.round(rawScore * 33), 100);
+
+      // Novelty penalty
+      let noveltyMultiplier = 1.0;
+      if (activity.merchantId && topMerchantIds.has(activity.merchantId)) {
+        noveltyMultiplier = 0.7;
+      }
+
+      const finalScore = Math.round(dnaScore * noveltyMultiplier);
+      const reason = this.buildMatchReason(matchedTags, dna, activity, noveltyMultiplier < 1.0);
+
+      return {
+        ...activity,
+        dnaMatch: finalScore,
+        matchReason: reason
+      };
+    }).sort((a, b) => (b.dnaMatch || 0) - (a.dnaMatch || 0));
+  }
+
+  private buildMatchReason(matchedTags: string[], dna: any, item: any, isFamiliar: boolean): string {
+    if (matchedTags.length === 0) {
+      return 'Explore something new based on your spending patterns';
+    }
+
+    const topTag = matchedTags[0];
+    const tagParts = topTag.split(':');
+    const namespace = tagParts[0];
+    const subtag = tagParts[1];
+
+    const friendlyNames: Record<string, Record<string, string>> = {
+      fnb: {
+        bubbletea: 'bubble tea', coffee: 'coffee', cafe: 'cafes', hawker: 'hawker food',
+        korean: 'Korean food', bbq: 'BBQ', buffet: 'buffets', local: 'local food',
+        foodfestival: 'food festivals'
+      },
+      fit: {
+        gym: 'the gym', fitness: 'fitness', sports: 'sports', nature: 'nature'
+      },
+      ent: {
+        liveevents: 'live events', kpop: 'K-pop', music: 'live music', comedy: 'comedy',
+        clubbing: 'clubbing', nightlife: 'nightlife', art: 'art', digital: 'digital art'
+    }
+  };
+
+    const friendly = friendlyNames[namespace]?.[subtag] || subtag;
+
+    if (isFamiliar) {
+      return `You love ${friendly} — here's a fresh take on it`;
+    }
+
+    return `Because you love ${friendly}`;
+  }
+
+  applyWeatherFilter(activities: Activity[], weather: string): Activity[] {
+    const currentWeather = weather.toLowerCase();
+    return activities.map(activity => {
+      const isSuitable = activity.weatherSuitable.includes('any') || 
+                         activity.weatherSuitable.includes(currentWeather);
+      const weatherMultiplier = isSuitable ? 1.0 : 0.3;
+      return {
+        ...activity,
+        dnaMatch: Math.round((activity.dnaMatch || 0) * weatherMultiplier),
+        weatherMultiplier
+      };
+    }).sort((a, b) => (b.dnaMatch || 0) - (a.dnaMatch || 0));
   }
 
   getTasteColor(match: number): string {
@@ -156,21 +243,11 @@ export class ExploreDataService {
     return 'medium';
   }
 
-  getTasteMatchReason(activity: Activity): string {
-    const reasons: Record<string, string> = {
-      'a1': 'You buy coffee almost every day. This workshop matches your daily ritual perfectly.',
-      'a2': 'You visit the gym every Tuesday and Thursday. A monthly pass saves you $3 per visit!',
-      'a3': 'You\'ve spent $35 on ramen in the past 2 weeks. This tour covers 4 top spots.',
-      'a4': 'Your transaction history shows 5+ hawker visits weekly. This walk hits all your favorites.',
-      'a5': 'You enjoy outdoor activities on sunny weekends. Cycling is a great low-cost option.',
-      'a6': 'Korean BBQ is your Wednesday dinner pattern. This buffet matches your spending habit.',
-      'a7': 'You go out on Saturday nights. Zouk is the iconic Singapore clubbing experience.',
-      'a8': 'You eat hawker food daily. Learning to cook it saves money long-term.',
-      'a9': 'You bought textbooks and study supplies. NUS library is perfect for focused work.',
-      'a10': 'You did an escape room on June 13. This new room theme keeps the excitement going.',
-      'a11': 'You walked Botanic Gardens on June 7. A guided tour adds depth to your visit.',
-      'a12': 'Toast Box appears in your history every Tuesday. The loyalty program rewards your habit.',
-    };
-    return reasons[activity.id] || 'This activity aligns with your general spending patterns.';
+  // Refresh events (call if needed)
+  refreshEvents(): void {
+    this.loadEvents();
+  }
+    getActivityById(id: string): Activity | undefined {
+    return this.activities.find(a => a.id === id);
   }
 }

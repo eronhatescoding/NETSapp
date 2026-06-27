@@ -6,9 +6,12 @@ export interface Event {
   venue: string;
   description: string;
   price: number;
-  tags: string[];
+  tags: string[];           // Calvin's namespace:subtag format, e.g. ['ent:liveevents']
+  isFeatured: boolean;
   imageUrl?: string;
-  isFeatured?: boolean;
+  dnaMatch?: number;      // Live score 0-100
+  matchReason?: string;    // "Because you love K-pop concerts"
+  weatherMultiplier?: number;
 }
 
 export interface Activity {
@@ -19,9 +22,12 @@ export interface Activity {
   location: string;
   distance: string;
   estimatedCost: number;
-  tasteMatch: number;
-  tags: string[];
-  weatherSuitable: ('sunny' | 'rainy' | 'cloudy' | 'any')[];
+  tags: string[];           // Calvin's namespace:subtag format
+  weatherSuitable: string[];
   isIndoor: boolean;
-  timeOfDay: 'morning' | 'afternoon' | 'evening' | 'any';
+  timeOfDay: string;
+  merchantId?: string;       // Links to Calvin's merchant catalogue for novelty filtering
+  dnaMatch?: number;        // Live score 0-100
+  matchReason?: string;     // "Because you love bubble tea"
+  weatherMultiplier?: number;
 }

@@ -1,0 +1,382 @@
+// ─────────────────────────────────────────────────────────────────
+// CONCIERGE WRAPPED — full-screen Spotify-style story cards
+// ─────────────────────────────────────────────────────────────────
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+// ─── Outer shell ──────────────────────────────────────────────────
+.wrapped-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+
+// ─── Progress segments ────────────────────────────────────────────
+.progress-bar {
+  position: absolute;
+  top: calc(var(--ion-safe-area-top, 0px) + 12px);
+  left: 12px;
+  right: 56px;
+  z-index: 20;
+  display: flex;
+  gap: 4px;
+}
+
+.prog-seg {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  transition: opacity 0.25s ease;
+
+  &.prog-done  { background: rgba(255, 255, 255, 0.95); }
+  &.prog-ahead { background: rgba(255, 255, 255, 0.3); }
+}
+
+// ─── Close button ─────────────────────────────────────────────────
+.w-close-btn {
+  position: absolute;
+  top: calc(var(--ion-safe-area-top, 0px) + 8px);
+  right: 12px;
+  z-index: 30;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.28);
+  border: none;
+  color: #ffffff;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  ion-icon { pointer-events: none; }
+}
+
+// ─── Cards track ──────────────────────────────────────────────────
+.cards-track {
+  position: absolute;
+  inset: 0;
+}
+
+.w-card {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+
+  &.w-active { transform: translateX(0); }
+  &.w-left   { transform: translateX(-100%); }
+  &.w-right  { transform: translateX(100%); }
+}
+
+// ─── Card body base ────────────────────────────────────────────────
+.card-body {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--ion-safe-area-top, 0px) + 72px) 32px
+           calc(var(--ion-safe-area-bottom, 0px) + 40px);
+  box-sizing: border-box;
+  color: #ffffff;
+}
+
+.center-body {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+}
+
+// ─── Shared typography ────────────────────────────────────────────
+.nets-wordmark {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -1.5px;
+  opacity: 0.9;
+  line-height: 1;
+}
+
+.eyebrow {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.headline {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 10px 0 6px;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.display {
+  font-size: 4.2rem;
+  letter-spacing: -2.5px;
+  line-height: 0.95;
+}
+
+.mega-number {
+  font-size: 5rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -3px;
+  margin: 14px 0 6px;
+}
+
+.stat-label {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+
+.sub-copy {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 14px 0 0;
+  line-height: 1.5;
+}
+
+.stat-line {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 8px 0 0;
+  line-height: 1.4;
+}
+
+// ─── Intro card ───────────────────────────────────────────────────
+.intro-body {
+  justify-content: space-between;
+}
+
+.intro-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tap-hint {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+// ─── Big emoji ────────────────────────────────────────────────────
+.big-emoji {
+  font-size: 4.5rem;
+  line-height: 1;
+  margin: 4px 0 14px;
+}
+
+// ─── Top tag ──────────────────────────────────────────────────────
+.tag-headline {
+  font-size: 3.2rem;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  margin: 6px 0;
+}
+
+.affinity-bar-wrap {
+  margin-top: 28px;
+  width: 100%;
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.affinity-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.affinity-fill {
+  height: 100%;
+  background: #ffffff;
+  border-radius: 3px;
+  transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.affinity-pct {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.5px;
+}
+
+// ─── Persona card ─────────────────────────────────────────────────
+.persona-emoji {
+  font-size: 5.5rem;
+  line-height: 1;
+  margin: 0 0 16px;
+}
+
+.persona-desc {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  font-style: italic;
+  margin: 14px 0 0;
+  max-width: 280px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+// ─── Summary card ─────────────────────────────────────────────────
+.summary-body {
+  justify-content: space-between;
+  gap: 0;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summary-year {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.summary-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 8px 0;
+}
+
+.sum-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 28px;
+
+  .sum-val {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .sum-key {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.55);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 5px;
+  }
+}
+
+.sum-divider {
+  width: 1px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+}
+
+.summary-personas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  justify-content: center;
+}
+
+.sum-persona {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 13px 18px;
+
+  .sp-emoji {
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
+  .sp-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+}
+
+.summary-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.summary-tagline {
+  font-size: 1rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.powered-by {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+
+.sum-close-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--ion-font-family, sans-serif);
+  transition: background 0.15s ease;
+
+  &:active { background: rgba(255, 255, 255, 0.25); }
+}

@@ -1,7 +1,18 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 import {
-  Transaction, SpendingPattern, WeeklyPattern
+  Firestore,
+  collection, query, where, onSnapshot,
+  doc, setDoc,
+} from '@angular/fire/firestore';
+import {
+  Transaction, SpendingPattern, WeeklyPattern,
+  UserDNA, TagAffinity, Persona,
 } from '../models/transaction.model';
+import { PERSONA_LIBRARY } from './tag-taxonomy';
+import { MERCHANT_BY_ID } from './merchant-catalogue';
+import { DEMO_USER_ID } from './seed.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserDnaService {
@@ -102,6 +113,203 @@ export class UserDnaService {
     { id: 't068', date: '2026-06-17', time: '15:00', amount: 32.00, type: 'debit', category: 'Shopping', subcategory: 'Clothing', description: 'Cotton On Tee & Shorts', merchant: 'Cotton On', location: 'Jurong East', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
     { id: 't069', date: '2026-06-17', time: '19:30', amount: 200.00, type: 'credit', category: 'Income', subcategory: 'Scholarship', description: 'MOE Scholarship', merchant: 'MOE', location: 'Bank Transfer', paymentMethod: 'Bank Transfer', weatherCondition: 'sunny' },
   ];
+
+  // ─────────────────────────────────────────────────────────────
+  // REACTIVE DNA ENGINE (Calvin) — Eron's sync methods below
+  // ─────────────────────────────────────────────────────────────
+
+  private txnSubject = new BehaviorSubject<Transaction[]>(this.transactions);
+
+  /** Reactive stream of all transactions — updates after addTransaction() or Firestore sync */
+  readonly transactions$ = this.txnSubject.asObservable();
+
+  /** Live UserDNA — recomputes whenever transactions change */
+  readonly dna$ = this.txnSubject.pipe(
+    map(() => this.computeUserDNA()),
+    shareReplay(1)
+  );
+
+  constructor(private firestore: Firestore) {
+    this.syncFromFirestore();
+  }
+
+  /** Listen to Firestore; switch to seeded data when available */
+  private syncFromFirestore(): void {
+    const q = query(
+      collection(this.firestore, 'transactions'),
+      where('userId', '==', DEMO_USER_ID)
+    );
+    onSnapshot(q,
+      snapshot => {
+        const firestoreTxns = snapshot.docs.map(d => d.data() as Transaction);
+        if (firestoreTxns.length > 0) {
+          const sorted = [...firestoreTxns].sort(
+            (a, b) => (a.date + a.time).localeCompare(b.date + b.time)
+          );
+          this.transactions = sorted;
+          this.txnSubject.next(sorted);
+        }
+      },
+      err => {
+        console.warn('[UserDnaService] Firestore read error — using hardcoded transactions:', err?.message ?? err);
+      }
+    );
+  }
+
+    async addTransaction(partial: Omit<Transaction, 'id'>): Promise<string> {
+    const ref = doc(collection(this.firestore, 'transactions'));
+    const txn: Transaction = { ...partial, id: ref.id };
+
+    // Optimistic update: add to local state immediately
+    this.transactions.push(txn);
+    this.transactions.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    this.txnSubject.next([...this.transactions]);
+
+    try {
+      await setDoc(ref, txn);
+    } catch (err) {
+      console.warn('[UserDnaService] Firestore write failed — keeping local transaction:', err);
+    }
+    return ref.id;
+  }
+
+  /** Returns the current UserDNA snapshot (synchronous). Use dna$ for reactive UI. */
+  getUserDNA(): UserDNA {
+    return this.computeUserDNA();
+  }
+
+  /**
+   * Compute full UserDNA from current in-memory transactions.
+   *
+   * Affinity weight formula (documented here for Eron's reference):
+   *   rawScore = 0.5 * freqShare + 0.3 * recencyScore + 0.2 * spendShare
+   *   weight   = rawScore / max(rawScore)          ← normalised to 0..1
+   *
+   * Where:
+   *   freqShare     = tag.count / totalTagOccurrences
+   *   recencyScore  = e^(-0.05 * daysSinceLastSeen)   (half-life ≈ 14 days)
+   *   spendShare    = tag.totalSpend / totalTagSpend
+   */
+  computeUserDNA(): UserDNA {
+    const all    = this.txnSubject.getValue();
+    const debits = all.filter(t => t.type === 'debit' && t.amount > 0);
+    const credits = all.filter(t => t.type === 'credit');
+
+    const totalSpent  = debits.reduce((s, t) => s + t.amount, 0);
+    const totalIncome = credits.reduce((s, t) => s + t.amount, 0);
+
+    // Category breakdown
+    const catMap = new Map<string, number>();
+    debits.forEach(t => catMap.set(t.category, (catMap.get(t.category) || 0) + t.amount));
+    const categoryBreakdown = Array.from(catMap.entries())
+      .map(([cat, amt]) => ({
+        category: cat as any,
+        amount: Math.round(amt * 100) / 100,
+        pct: totalSpent > 0 ? Math.round(amt / totalSpent * 1000) / 10 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    // Top merchants
+    const mMap = new Map<string, { name: string; count: number; spend: number }>();
+    debits.forEach(t => {
+      const key = t.merchantId || t.merchant || 'unknown';
+      const m = mMap.get(key) || { name: t.merchant || key, count: 0, spend: 0 };
+      m.count++;
+      m.spend += t.amount;
+      mMap.set(key, m);
+    });
+    const topMerchants = Array.from(mMap.entries())
+      .map(([mid, m]) => ({ merchantId: mid, name: m.name, count: m.count, spend: Math.round(m.spend * 100) / 100 }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // Tag affinity vector
+    const tagMap = new Map<string, { count: number; spend: number; lastSeen: string }>();
+    debits.forEach(t => {
+      if (!t.tags?.length) return;
+      const splitSpend = t.amount / t.tags.length;
+      t.tags.forEach(tag => {
+        const e = tagMap.get(tag) || { count: 0, spend: 0, lastSeen: '2000-01-01' };
+        e.count++;
+        e.spend += splitSpend;
+        if (t.date > e.lastSeen) e.lastSeen = t.date;
+        tagMap.set(tag, e);
+      });
+    });
+
+    const today = new Date().toISOString().split('T')[0];
+    const totalTagCount = Array.from(tagMap.values()).reduce((s, v) => s + v.count, 0);
+    const totalTagSpend = Array.from(tagMap.values()).reduce((s, v) => s + v.spend, 0);
+
+    const rawScores = new Map<string, number>();
+    tagMap.forEach((v, tag) => {
+      const freqShare    = totalTagCount > 0 ? v.count / totalTagCount : 0;
+      const daysSince    = Math.max(0,
+        (new Date(today).getTime() - new Date(v.lastSeen).getTime()) / 86_400_000);
+      const recencyScore = Math.exp(-0.05 * daysSince);
+      const spendShare   = totalTagSpend > 0 ? v.spend / totalTagSpend : 0;
+      rawScores.set(tag, 0.5 * freqShare + 0.3 * recencyScore + 0.2 * spendShare);
+    });
+
+    const maxRaw = Math.max(0, ...rawScores.values());
+    const affinityVector: TagAffinity[] = [];
+    tagMap.forEach((v, tag) => {
+      affinityVector.push({
+        tag,
+        weight:     maxRaw > 0 ? Math.round((rawScores.get(tag)! / maxRaw) * 1000) / 1000 : 0,
+        count:      v.count,
+        totalSpend: Math.round(v.spend * 100) / 100,
+        lastSeen:   v.lastSeen,
+      });
+    });
+    affinityVector.sort((a, b) => b.weight - a.weight);
+
+    const personas = this.derivePersonas(affinityVector);
+
+    return {
+      userId: DEMO_USER_ID,
+      generatedAt: new Date().toISOString(),
+      totals: {
+        spent:    Math.round(totalSpent  * 100) / 100,
+        income:   Math.round(totalIncome * 100) / 100,
+        txnCount: all.length,
+      },
+      categoryBreakdown,
+      topMerchants,
+      affinityVector,
+      personas,
+    };
+  }
+
+  private derivePersonas(affinityVector: TagAffinity[]): Persona[] {
+    const topTags = new Set(affinityVector.slice(0, 20).map(a => a.tag));
+    const matched: Persona[] = [];
+    for (const persona of PERSONA_LIBRARY) {
+      if (persona.triggerTags.some(t => topTags.has(t))) {
+        matched.push(persona);
+      }
+      if (matched.length >= 3) break;
+    }
+    return matched;
+  }
+
+  /**
+   * JSON export for Eron's recommendation engine.
+   * Contains affinityVector + merchant tag catalogue.
+   * No similarity scores or location logic — that's Eron's side.
+   */
+  exportDnaJson(): string {
+    const dna = this.computeUserDNA();
+    const merchantExport = Array.from(MERCHANT_BY_ID.values()).map(m => ({
+      id: m.id,
+      tags: m.tags,
+    }));
+    return JSON.stringify({
+      userId: dna.userId,
+      affinityVector: dna.affinityVector,
+      merchants: merchantExport,
+    }, null, 2);
+  }
 
   // ─────────────────────────────────────────────────────────────
   // PATTERN RECOGNITION ENGINE
@@ -307,5 +515,27 @@ export class UserDnaService {
     const counts = new Map<string, number>();
     arr.forEach(v => counts.set(v, (counts.get(v) || 0) + 1));
     return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ?? arr[0];
+  }
+    addExternalTransaction(partial: any): void {
+    const txn: Transaction = {
+      id: `ext-${Date.now()}`,
+      date: partial.date || new Date().toISOString().split('T')[0],
+      time: partial.time || '12:00',
+      amount: partial.amount || 0,
+      type: partial.type || 'debit',
+      category: partial.category || 'Entertainment',
+      subcategory: partial.subcategory || 'General',
+      description: partial.description || 'External activity',
+      merchant: partial.merchant || 'Unknown',
+      location: partial.location || 'Singapore',
+      paymentMethod: partial.paymentMethod || 'NETS Pay',
+      weatherCondition: partial.weatherCondition || 'sunny',
+      tags: partial.tags || [],
+      merchantId: partial.merchantId || null
+    };
+
+    this.transactions.push(txn);
+    this.transactions.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    this.txnSubject.next([...this.transactions]);
   }
 }

@@ -16,19 +16,39 @@ const routes: Routes = [
         loadChildren: () => import('../pages/explore/explore.module').then(m => m.ExplorePageModule)
       },
       {
-        path: 'insights',
+        path: 'dna',
         loadChildren: () => import('../pages/insights/insights.module').then(m => m.InsightsPageModule)
       },
       {
+        path: 'pay',
+        loadChildren: () => import('../pages/pay/pay.module').then(m => m.PayPageModule)
+      },
+      {
+        path: 'settings',
+        loadChildren: () => import('../pages/settings/settings.module').then(m => m.SettingsPageModule)
+      },
+      {
+        path: 'transaction-detail/:id',
+        loadChildren: () => import('../pages/transaction-detail/transaction-detail.module').then(m => m.TransactionDetailPageModule)
+      },
+      {
+        path: 'day-plan/:date',
+        loadChildren: () => import('../pages/day-plan/day-plan.module').then(m => m.DayPlanPageModule)
+      },
+      {
+        path: 'activity-detail/:id',
+        loadChildren: () => import('../pages/activity-detail/activity-detail.module').then(m => m.ActivityDetailPageModule)
+      },
+      {
         path: '',
-        redirectTo: '/tabs/calendar',
+        redirectTo: 'calendar',
         pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: '/tabs/calendar',
+    redirectTo: 'tabs/calendar',
     pathMatch: 'full'
   }
 ];

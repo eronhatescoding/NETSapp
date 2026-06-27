@@ -1,0 +1,158 @@
+<div class="wrapped-shell"
+     (click)="onTap($event)"
+     (touchstart)="onTouchStart($event)"
+     (touchend)="onTouchEnd($event)">
+
+  <!-- ─── Progress bar ─── -->
+  <div class="progress-bar">
+    <div class="prog-seg"
+         *ngFor="let c of cards; let i = index"
+         [class.prog-done]="i <= currentIdx"
+         [class.prog-ahead]="i > currentIdx">
+    </div>
+  </div>
+
+  <!-- ─── Close button ─── -->
+  <button class="w-close-btn" (click)="close(); $event.stopPropagation()">
+    <ion-icon name="close-outline"></ion-icon>
+  </button>
+
+  <!-- ─── Cards ─── -->
+  <div class="cards-track">
+    <div class="w-card"
+         *ngFor="let card of cards; let i = index"
+         [ngStyle]="getCardStyle(card)"
+         [class.w-active]="i === currentIdx"
+         [class.w-left]="i < currentIdx"
+         [class.w-right]="i > currentIdx">
+
+      <ng-container [ngSwitch]="card.type">
+
+        <!-- ══ INTRO ══ -->
+        <ng-container *ngSwitchCase="'intro'">
+          <div class="card-body intro-body">
+            <span class="nets-wordmark">NETS</span>
+            <div class="intro-main">
+              <p class="eyebrow">Your</p>
+              <h1 class="headline display">{{year}}<br>Wrapped</h1>
+              <p class="sub-copy">See how you really spend</p>
+            </div>
+            <p class="tap-hint">Tap anywhere to begin →</p>
+          </div>
+        </ng-container>
+
+        <!-- ══ SPENDING ══ -->
+        <ng-container *ngSwitchCase="'spending'">
+          <div class="card-body center-body">
+            <p class="eyebrow">this period, you spent</p>
+            <div class="mega-number">${{dna.totals.spent | number:'1.0-0'}}</div>
+            <p class="sub-copy">That's your spending story</p>
+          </div>
+        </ng-container>
+
+        <!-- ══ TXN COUNT ══ -->
+        <ng-container *ngSwitchCase="'txn-count'">
+          <div class="card-body center-body">
+            <p class="eyebrow">you made</p>
+            <div class="mega-number">{{dna.totals.txnCount}}</div>
+            <p class="stat-label">transactions</p>
+            <p class="sub-copy">{{txnTagline}}</p>
+          </div>
+        </ng-container>
+
+        <!-- ══ TOP CATEGORY ══ -->
+        <ng-container *ngSwitchCase="'top-category'">
+          <div class="card-body center-body" *ngIf="topCategory">
+            <p class="eyebrow">your #1 category</p>
+            <div class="big-emoji">{{getCategoryEmoji(topCategory.category)}}</div>
+            <h2 class="headline">{{topCategory.category}}</h2>
+            <p class="stat-line">
+              ${{topCategory.amount | number:'1.0-0'}} &nbsp;·&nbsp;
+              {{topCategory.pct | number:'1.0-0'}}% of spending
+            </p>
+          </div>
+        </ng-container>
+
+        <!-- ══ TOP MERCHANT ══ -->
+        <ng-container *ngSwitchCase="'top-merchant'">
+          <div class="card-body center-body" *ngIf="topMerchant">
+            <p class="eyebrow">your most visited spot</p>
+            <div class="big-emoji">⭐</div>
+            <h2 class="headline">{{topMerchant.name}}</h2>
+            <p class="stat-line">
+              {{topMerchant.count}} visits &nbsp;·&nbsp;
+              ${{topMerchant.spend | number:'1.0-0'}} spent
+            </p>
+          </div>
+        </ng-container>
+
+        <!-- ══ TOP TAG ══ -->
+        <ng-container *ngSwitchCase="'top-tag'">
+          <div class="card-body center-body" *ngIf="topTag">
+            <p class="eyebrow">you're basically a</p>
+            <h1 class="headline tag-headline">{{formatTagName(topTag.tag)}}</h1>
+            <p class="eyebrow">addict</p>
+            <div class="affinity-bar-wrap">
+              <div class="affinity-bar">
+                <div class="affinity-fill" [style.width.%]="topTag.weight * 100"></div>
+              </div>
+              <span class="affinity-pct">{{topTag.weight * 100 | number:'1.0-0'}}% affinity score</span>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ══ PERSONA ══ -->
+        <ng-container *ngSwitchCase="'persona'">
+          <div class="card-body center-body" *ngIf="topPersona">
+            <p class="eyebrow">you are</p>
+            <div class="persona-emoji">{{topPersona.emoji}}</div>
+            <h2 class="headline">{{topPersona.name}}</h2>
+            <p class="persona-desc">"{{topPersona.description}}"</p>
+          </div>
+        </ng-container>
+
+        <!-- ══ SUMMARY ══ -->
+        <ng-container *ngSwitchCase="'summary'">
+          <div class="card-body summary-body">
+
+            <div class="summary-header">
+              <span class="nets-wordmark">NETS</span>
+              <span class="summary-year">{{year}} Wrapped</span>
+            </div>
+
+            <div class="summary-stats">
+              <div class="sum-stat">
+                <span class="sum-val">${{dna.totals.spent | number:'1.0-0'}}</span>
+                <span class="sum-key">spent</span>
+              </div>
+              <div class="sum-divider"></div>
+              <div class="sum-stat">
+                <span class="sum-val">{{dna.totals.txnCount}}</span>
+                <span class="sum-key">transactions</span>
+              </div>
+            </div>
+
+            <div class="summary-personas" *ngIf="allPersonas.length > 0">
+              <div class="sum-persona" *ngFor="let p of allPersonas">
+                <span class="sp-emoji">{{p.emoji}}</span>
+                <span class="sp-name">{{p.name}}</span>
+              </div>
+            </div>
+
+            <div class="summary-footer">
+              <p class="summary-tagline">Your Consumer DNA</p>
+              <p class="powered-by">Powered by NETS</p>
+              <button class="sum-close-btn"
+                      (click)="close(); $event.stopPropagation()">
+                Done
+              </button>
+            </div>
+
+          </div>
+        </ng-container>
+
+      </ng-container>
+    </div>
+  </div>
+
+</div>

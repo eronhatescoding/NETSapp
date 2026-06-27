@@ -1,6 +1,6 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="calendar-toolbar">
-    <ion-title>
+<ion-header class="ion-no-border" style="display: block;">
+  <ion-toolbar class="calendar-toolbar" style="--min-height: 56px;">
+    <ion-title style="height: 56px; display: flex; align-items: center;">
       <div class="toolbar-brand">
         <div class="brand-logo">
           <span class="logo-n">N</span>
@@ -19,7 +19,15 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="calendar-content" scroll-y="false">
+<ion-content class="calendar-content" scroll-y="true">
+  <!-- DNA Live Indicator -->
+  <div class="dna-status-bar" *ngIf="dnaLoaded$ | async">
+    <div class="dna-pulse">
+      <span class="pulse-dot"></span>
+      <span class="pulse-text">DNA Forecast Active</span>
+    </div>
+  </div>
+
   <!-- Month Navigator -->
   <div class="month-navigator animate-fade-in-up">
     <ion-button fill="clear" size="small" class="nav-btn" disabled>
@@ -68,35 +76,31 @@
 
   <!-- Calendar Grid -->
   <div class="calendar-grid animate-fade-in-up stagger-3">
-    <div *ngFor="let day of calendarDays; let i = index"
-         class="calendar-day"
-         [class.other-month]="!day.isCurrentMonth"
-         [class.today]="day.isToday"
-         [class.has-transactions]="day.hasTransactions"
-         [class.future-ai]="day.isFutureWithAI"
-         [class.has-pattern]="day.patterns.length > 0"
-         [class.spending-high]="day.totalSpent > 50"
-         [class.spending-medium]="day.totalSpent > 20 && day.totalSpent <= 50"
-         [style.animation-delay]="i * 0.01 + 's'"
-         (click)="onDayClick(day)">
+    <div *ngFor="let day of calendarDays; let i = index" class="calendar-day" [class.other-month]="!day.isCurrentMonth"
+      [class.today]="day.isToday" [class.has-transactions]="day.hasTransactions" [class.future-ai]="day.isFutureWithAI"
+      [class.has-pattern]="day.patterns.length > 0" [class.spending-high]="day.totalSpent > 50"
+      [class.spending-medium]="day.totalSpent > 20 && day.totalSpent <= 50" [style.animation-delay]="i * 0.01 + 's'"
+      (click)="onDayClick(day)">
 
-      <span class="day-number">{{ day.date }}</span>
+      <span class="day-number">{{ day.day }}</span>
 
-      <!-- Spending indicator -->
-      <div class="spending-ring" *ngIf="day.hasTransactions && day.totalSpent > 0"
-           [class.ring-high]="day.totalSpent > 50"
-           [class.ring-medium]="day.totalSpent > 20 && day.totalSpent <= 50">
+      <!-- Single smart indicator -->
+      <div class="day-indicator">
+        <!-- Past day: show total spent -->
+        <span class="spending-pill" [class.high]="day.totalSpent > 50"
+          [class.medium]="day.totalSpent > 20 && day.totalSpent <= 50"
+          *ngIf="day.hasTransactions && day.totalSpent > 0 && !day.isFutureWithAI">
+          ${{ day.totalSpent | number:'1.0-0' }}
+        </span>
+        <!-- Past day with patterns: show count -->
+        <span class="pattern-badge" *ngIf="day.patterns.length > 0 && !day.isFutureWithAI">
+          {{ day.patterns.length }}
+        </span>
       </div>
 
-      <!-- AI sparkle for future -->
+      <!-- AI sparkle for future predictions only -->
       <div class="ai-indicator" *ngIf="day.isFutureWithAI">
         <ion-icon name="sparkles" class="sparkle-icon"></ion-icon>
-      </div>
-
-      <!-- Pattern dots -->
-      <div class="pattern-dots" *ngIf="day.patterns.length > 0 && day.isFutureWithAI">
-        <span *ngFor="let p of day.patterns.slice(0,2)" class="pattern-dot"
-              [style.background]="getPatternDotColor(p)"></span>
       </div>
     </div>
   </div>
@@ -118,18 +122,17 @@
   </div>
 
   <!-- Today's Timeline -->
-  <div class="today-section animate-fade-in-up">
+  <div class="today-section animate-fade-in-up" *ngIf="todayTransactions.length > 0">
     <div class="section-header">
       <div class="section-title-group">
         <ion-icon name="time-outline" color="primary"></ion-icon>
         <h3>Today's Timeline</h3>
       </div>
-      <span class="today-date">{{ getDayName(todayStr) }}, 17 Jun</span>
+      <span class="today-date">{{ getDayName(todayStr) }}, {{ todayStr | date:'d MMM' }}</span>
     </div>
 
     <div class="timeline-list">
-      <div class="timeline-item" *ngFor="let t of userDnaService.getTransactionsByDate(todayStr); let last = last"
-           [class.last]="last">
+      <div class="timeline-item" *ngFor="let t of todayTransactions; let last = last" [class.last]="last">
         <div class="timeline-left">
           <div class="timeline-time">{{ t.time }}</div>
           <div class="timeline-line" *ngIf="!last"></div>
@@ -187,66 +190,6 @@
   <div style="height: 100px;"></div>
 </ion-content>
 
-<!-- Stats Modal -->
-<ion-modal [isOpen]="showStatsModal" (didDismiss)="closeStats()" class="stats-modal">
-  <ng-template>
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="modal-toolbar">
-        <ion-buttons slot="start">
-          <ion-button (click)="closeStats()" class="close-btn">
-            <ion-icon name="close-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <ion-title>Spending Analytics</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="stats-content">
-      <!-- Hero Stats -->
-      <div class="stats-hero">
-        <div class="hero-card">
-          <span class="hero-label">Total Spent</span>
-          <span class="hero-value">${{ monthStats.totalSpent | number:'1.2-2' }}</span>
-          <div class="hero-trend down">
-            <ion-icon name="trending-down-outline"></ion-icon>
-            <span>12% vs last month</span>
-          </div>
-        </div>
-        <div class="hero-card">
-          <span class="hero-label">Total Income</span>
-          <span class="hero-value income">${{ monthStats.totalIncome | number:'1.2-2' }}</span>
-          <div class="hero-trend up">
-            <ion-icon name="trending-up-outline"></ion-icon>
-            <span>8% vs last month</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Category Breakdown -->
-      <div class="breakdown-section">
-        <h3 class="breakdown-title">By Category</h3>
-        <div class="breakdown-list">
-          <div class="breakdown-item" *ngFor="let cat of categoryBreakdown; let i = index"
-               [style.animation-delay]="i * 0.05 + 's'">
-            <div class="breakdown-header">
-              <div class="breakdown-icon" [style.background]="'hsl(' + (i * 60 + 200) + ', 70%, 90%)'">
-                <ion-icon [name]="getTransactionIcon(cat.name)" [style.color]="'hsl(' + (i * 60 + 200) + ', 70%, 40%)'"></ion-icon>
-              </div>
-              <span class="breakdown-name">{{ cat.name }}</span>
-              <span class="breakdown-amount">${{ cat.amount | number:'1.2-2' }}</span>
-            </div>
-            <div class="breakdown-bar-bg">
-              <div class="breakdown-bar-fill" [style.width.%]="(cat.amount / monthStats.totalSpent) * 100"
-                   [style.background]="'linear-gradient(90deg, hsl(' + (i * 60 + 200) + ', 70%, 50%), hsl(' + (i * 60 + 200) + ', 70%, 60%))'">
-              </div>
-            </div>
-            <span class="breakdown-percent">{{ (cat.amount / monthStats.totalSpent * 100) | number:'1.0-0' }}%</span>
-          </div>
-        </div>
-      </div>
-    </ion-content>
-  </ng-template>
-</ion-modal>
-
 <!-- Day Detail Modal -->
 <ion-modal [isOpen]="showDetailModal" (didDismiss)="closeDetailModal()" class="detail-modal">
   <ng-template>
@@ -262,7 +205,77 @@
       </ion-toolbar>
     </ion-header>
     <ion-content class="detail-content">
-      <div class="day-summary">
+      <!-- DNA Prediction Summary (for future/today) -->
+      <div class="prediction-hero" *ngIf="selectedPrediction">
+        <div class="prediction-card">
+          <div class="prediction-header">
+            <ion-icon name="sparkles" color="warning"></ion-icon>
+            <span class="prediction-label">{{ selectedDate === todayStr ? 'Still to Come' : 'DNA Forecast' }}</span>
+            <span class="prediction-confidence">{{ selectedPrediction.confidence }}% confidence</span>
+          </div>
+          <p class="prediction-summary">{{ selectedPrediction.aiSummary }}</p>
+          <div class="prediction-spend">
+            <span class="spend-label">Predicted spend:</span>
+            <span class="spend-value">${{ selectedPrediction.totalPredictedSpend | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Predicted Activities (for future days) -->
+      <div class="predicted-section"
+        *ngIf="selectedPrediction?.predictedActivities && selectedPrediction!.predictedActivities.length > 0">
+        <h4 class="section-subtitle">Predicted Activities</h4>
+        <div class="predicted-list">
+          <div class="predicted-item" *ngFor="let activity of selectedPrediction!.predictedActivities">
+            <div class="predicted-time">{{ activity.time }}</div>
+            <div class="predicted-card">
+              <div class="predicted-main">
+                <div class="predicted-icon" [class.pattern]="activity.isFromPattern"
+                  [class.dna]="!activity.isFromPattern">
+                  <ion-icon [name]="activity.isFromPattern ? 'trending-up-outline' : 'flame-outline'"></ion-icon>
+                </div>
+                <div class="predicted-info">
+                  <span class="predicted-title">{{ activity.description }}</span>
+                  <span class="predicted-reason">{{ activity.reason }}</span>
+                  <span class="predicted-weather" *ngIf="activity.weatherNote">
+                    <ion-icon name="rainy-outline"></ion-icon>
+                    {{ activity.weatherNote }}
+                  </span>
+                </div>
+                <div class="predicted-cost">
+                  <span class="cost-amount">~${{ activity.estimatedCost | number:'1.2-2' }}</span>
+                  <span class="cost-confidence">{{ activity.confidence }}%</span>
+                </div>
+              </div>
+              <!-- Real Alternatives -->
+              <div class="alternatives" *ngIf="activity.alternatives.length > 0">
+                <div class="alt-header">
+                  <ion-icon name="location-outline" color="primary"></ion-icon>
+                  <span>Real alternatives nearby</span>
+                </div>
+                <div class="alt-item" *ngFor="let alt of activity.alternatives">
+                  <div class="alt-photo" *ngIf="alt.photoUrl">
+                    <img [src]="alt.photoUrl" alt="">
+                  </div>
+                  <div class="alt-info">
+                    <span class="alt-desc">{{ alt.description }}</span>
+                    <span class="alt-meta">
+                      <ion-icon name="star" color="warning"></ion-icon> {{ alt.rating }}
+                      · {{ alt.distance }}
+                      · {{ alt.isOpen ? 'Open now' : 'Closed' }}
+                    </span>
+                    <span class="alt-reason">{{ alt.reason }}</span>
+                  </div>
+                  <span class="alt-cost">${{ alt.estimatedCost }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actual Transactions (past/today) -->
+      <div class="day-summary" *ngIf="selectedTransactions.length > 0">
         <div class="day-total">
           <span class="day-total-label">Day Total</span>
           <span class="day-total-value">
@@ -270,7 +283,8 @@
           </span>
         </div>
       </div>
-      <div class="transaction-list">
+      <div class="transaction-list" *ngIf="selectedTransactions.length > 0">
+        <h4 class="section-subtitle">Transactions</h4>
         <ion-card class="txn-card card-hover" *ngFor="let t of selectedTransactions" (click)="viewTransactionDetail(t)">
           <ion-card-content class="txn-card-content">
             <div class="txn-icon-wrapper" [class.income]="t.type === 'credit'">
@@ -288,6 +302,54 @@
             </span>
           </ion-card-content>
         </ion-card>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state"
+        *ngIf="selectedTransactions.length === 0 && (!selectedPrediction?.predictedActivities || selectedPrediction!.predictedActivities.length === 0)">
+        <ion-icon name="calendar-clear-outline" color="medium"></ion-icon>
+        <p>No data for this day</p>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+<!-- Stats Modal -->
+<ion-modal [isOpen]="showStatsModal" (didDismiss)="closeStats()" class="stats-modal">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="modal-toolbar">
+        <ion-buttons slot="start">
+          <ion-button (click)="closeStats()" class="close-btn">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Spending Analytics</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="stats-content">
+      <div class="stats-hero">
+        <div class="hero-card">
+          <span class="hero-label">Total Spent</span>
+          <span class="hero-value">${{ monthStats.totalSpent | number:'1.2-2' }}</span>
+        </div>
+        <div class="hero-card income">
+          <span class="hero-label">Total Income</span>
+          <span class="hero-value">${{ monthStats.totalIncome | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="breakdown-section">
+        <h3 class="breakdown-title">By Category</h3>
+        <div class="breakdown-list">
+          <div class="breakdown-item" *ngFor="let cat of categoryBreakdown; let i = index">
+            <div class="breakdown-header">
+              <span class="breakdown-name">{{ cat.name }}</span>
+              <span class="breakdown-amount">${{ cat.amount | number:'1.2-2' }}</span>
+            </div>
+            <div class="breakdown-bar-bg">
+              <div class="breakdown-bar-fill" [style.width.%]="(cat.amount / monthStats.totalSpent) * 100"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </ion-content>
   </ng-template>
