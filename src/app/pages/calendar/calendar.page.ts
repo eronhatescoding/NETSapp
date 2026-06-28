@@ -72,6 +72,8 @@ export class CalendarPage {
   selectedPrediction: any = null;  // Changed from DayPrediction to any for flexibility
 
   timelineItems: TimelineItem[] = [];
+  private deletedPlannedIds = new Set<string>();
+  private deletedPredictionKeys = new Set<string>();
 
   // DNA integration
   dnaLoaded$: Observable<boolean>;
@@ -475,79 +477,127 @@ export class CalendarPage {
     return !!t.isPlanned;
   }
   // Add this new method
-  private async buildTimeline(day: CalendarDay): Promise<TimelineItem[]> {
-    const items: TimelineItem[] = [];
-    const txs = this.userDnaService.getTransactionsByDate(day.date);
+private async buildTimeline(day: CalendarDay): Promise<TimelineItem[]> {
+  const items: TimelineItem[] = [];
+  const txs = this.userDnaService.getTransactionsByDate(day.date);
 
-    // Add real transactions (paid + income)
-    for (const t of txs) {
+  // Add real transactions (paid + income + planned)
+  for (const t of txs) {
+    // Skip locally-deleted planned transactions
+    if (t.isPlanned && this.deletedPlannedIds.has(t.id)) {
+      continue;
+    }
+
+    items.push({
+      kind: t.type === 'credit' ? 'income' : (t.isPlanned ? 'planned' : 'paid'),
+      time: t.time,
+      title: t.description,
+      location: t.merchant || t.location || 'Singapore',
+      amount: t.amount,
+      icon: this.getTransactionIcon(t.category),
+      expanded: false,
+      raw: t
+    });
+  }
+
+  // Add AI predictions for today and future
+  if (day.isToday || day.isFutureWithAI) {
+    const prediction = await this.generatePrediction(day.date, day.isToday);
+    for (const act of prediction.predictedActivities || []) {
+      // Skip locally-deleted predictions
+      const key = `${day.date}-${act.time}-${act.description}`;
+      if (this.deletedPredictionKeys.has(key)) {
+        continue;
+      }
+
       items.push({
-        kind: t.type === 'credit' ? 'income' : (t.isPlanned ? 'planned' : 'paid'),
-        time: t.time,
-        title: t.description,
-        location: t.merchant || t.location || 'Singapore',
-        amount: t.amount,
-        icon: this.getTransactionIcon(t.category),
+        kind: 'predicted',
+        time: act.time,
+        title: act.description,
+        location: 'Based on your DNA',
+        amount: act.estimatedCost,
+        icon: act.isFromPattern ? 'trending-up-outline' : 'flame-outline',
         expanded: false,
-        raw: t
+        confidence: act.confidence,
+        reason: act.reason,
+        alternatives: act.alternatives,
+        raw: act
       });
     }
-
-    // Add AI predictions for today and future
-    if (day.isToday || day.isFutureWithAI) {
-      const prediction = await this.generatePrediction(day.date, day.isToday);
-      for (const act of prediction.predictedActivities || []) {
-        items.push({
-          kind: 'predicted',
-          time: act.time,
-          title: act.description,
-          location: 'Based on your DNA',
-          amount: act.estimatedCost,
-          icon: act.isFromPattern ? 'trending-up-outline' : 'flame-outline',
-          expanded: false,
-          confidence: act.confidence,
-          reason: act.reason,
-          alternatives: act.alternatives,
-          raw: act
-        });
-      }
-    }
-
-    // Sort chronologically
-    items.sort((a, b) => {
-      const [ha, ma] = a.time.split(':').map(Number);
-      const [hb, mb] = b.time.split(':').map(Number);
-      return (ha * 60 + ma) - (hb * 60 + mb);
-    });
-
-    return items;
   }
+
+  // Sort chronologically
+  items.sort((a, b) => {
+    const [ha, ma] = a.time.split(':').map(Number);
+    const [hb, mb] = b.time.split(':').map(Number);
+    return (ha * 60 + ma) - (hb * 60 + mb);
+  });
+
+  return items;
+}
   toggleItem(item: TimelineItem) {
     item.expanded = !item.expanded;
   }
   getItemBadgeColor(kind: string): string {
-  switch (kind) {
-    case 'planned': return 'tertiary';
-    case 'paid': return 'danger';
-    case 'predicted': return 'warning';
-    case 'income': return 'success';
-    default: return 'medium';
+    switch (kind) {
+      case 'planned': return 'tertiary';
+      case 'paid': return 'danger';
+      case 'predicted': return 'warning';
+      case 'income': return 'success';
+      default: return 'medium';
+    }
   }
-}
 
-getPlannedTotal(): number {
-  return this.timelineItems
-    .filter(i => i.kind === 'planned' || i.kind === 'predicted')
-    .reduce((s, i) => s + i.amount, 0);
-}
+  getPlannedTotal(): number {
+    return this.timelineItems
+      .filter(i => i.kind === 'planned' || i.kind === 'predicted')
+      .reduce((s, i) => s + i.amount, 0);
+  }
 
-getPaidTotal(): number {
-  return this.timelineItems
-    .filter(i => i.kind === 'paid')
-    .reduce((s, i) => s + i.amount, 0);
-}
+  getPaidTotal(): number {
+    return this.timelineItems
+      .filter(i => i.kind === 'paid')
+      .reduce((s, i) => s + i.amount, 0);
+  }
 
-getDayTotal(): number {
-  return this.getPaidTotal();
-}
+  getDayTotal(): number {
+    return this.getPaidTotal();
+  }
+  deleteTimelineItem(item: TimelineItem, event?: Event) {
+    if (event) {
+      event.stopPropagation(); // Prevent card toggle
+    }
+
+    // Guard: only planned & predicted can be deleted
+    if (item.kind !== 'planned' && item.kind !== 'predicted') {
+      return;
+    }
+
+    if (item.kind === 'planned') {
+      // Track deletion locally
+      if (item.raw?.id) {
+        this.deletedPlannedIds.add(item.raw.id);
+      }
+      // Attempt to persist to service (add this method to UserDnaService if you want permanent deletion)
+      try {
+        const svc = this.userDnaService as any;
+        if (svc.deleteTransaction) {
+          svc.deleteTransaction(item.raw.id);
+        }
+      } catch (e) {
+        console.warn('[Calendar] deleteTransaction not available on service:', e);
+      }
+    }
+
+    if (item.kind === 'predicted') {
+      const key = `${this.selectedDate}-${item.time}-${item.title}`;
+      this.deletedPredictionKeys.add(key);
+    }
+
+    // Remove from current view immediately
+    this.timelineItems = this.timelineItems.filter(i => i !== item);
+
+    // Refresh calendar stats/badges so the grid updates if planned items are gone
+    this.refreshCalendarData();
+  }
 }
