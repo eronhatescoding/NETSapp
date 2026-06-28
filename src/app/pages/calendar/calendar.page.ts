@@ -60,6 +60,9 @@ export class CalendarPage {
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+  calendarView: 'month' | 'week' = 'month';
+  selectedDayStr: string | null = null;
+
   calendarDays: CalendarDay[] = [];
   monthStats = { totalSpent: 0, totalIncome: 0, transactionCount: 0 };
   detectedPatterns: SpendingPattern[] = [];
@@ -180,6 +183,7 @@ export class CalendarPage {
 
   // Replace your existing onDayClick with this
   async onDayClick(day: CalendarDay) {
+    this.selectedDayStr = day.date;
     this.selectedDate = day.date;
     this.showDetailModal = true;
 
@@ -599,5 +603,94 @@ private async buildTimeline(day: CalendarDay): Promise<TimelineItem[]> {
 
     // Refresh calendar stats/badges so the grid updates if planned items are gone
     this.refreshCalendarData();
+  }
+
+  get isCalendarCollapsed(): boolean {
+    return !!this.selectedDayStr;
+  }
+
+  get displayedCalendarDays(): CalendarDay[] {
+    return this.isCalendarCollapsed ? this.getCollapsedWeekDays() : this.calendarDays;
+  }
+
+  getCollapsedWeekDays(): CalendarDay[] {
+    if (!this.selectedDayStr) return [];
+    const selected = new Date(this.selectedDayStr + 'T00:00:00');
+    const dow = selected.getDay();
+    const weekStart = new Date(selected);
+    weekStart.setDate(selected.getDate() - dow);
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      return this.buildCalendarDay(d, d.getMonth() === this.currentMonth.getMonth());
+    });
+  }
+
+  expandCalendar() {
+    this.selectedDayStr = null;
+  }
+
+  switchView(view: 'month' | 'week') {
+    this.calendarView = view;
+    if (view === 'week') {
+      const today = new Date();
+      if (today.getMonth() === this.currentMonth.getMonth() &&
+          today.getFullYear() === this.currentMonth.getFullYear()) {
+        this.currentMonth = new Date(today);
+      } else {
+        this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth(), 1);
+      }
+    } else {
+      this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth(), 1);
+    }
+    this.loadMonthData();
+  }
+
+  prevPeriod() {
+    if (this.calendarView === 'month') {
+      this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() - 1, 1);
+    } else {
+      const d = new Date(this.currentMonth);
+      d.setDate(d.getDate() - 7);
+      this.currentMonth = d;
+    }
+    this.loadMonthData();
+  }
+
+  nextPeriod() {
+    if (this.calendarView === 'month') {
+      this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 1);
+    } else {
+      const d = new Date(this.currentMonth);
+      d.setDate(d.getDate() + 7);
+      this.currentMonth = d;
+    }
+    this.loadMonthData();
+  }
+
+  getWeekDays(): CalendarDay[] {
+    const dow = this.currentMonth.getDay();
+    const weekStart = new Date(this.currentMonth);
+    weekStart.setDate(this.currentMonth.getDate() - dow);
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      return this.buildCalendarDay(d, d.getMonth() === this.currentMonth.getMonth());
+    });
+  }
+
+  getPeriodLabel(): string {
+    if (this.calendarView === 'month') {
+      return `${this.monthNames[this.currentMonth.getMonth()]} ${this.currentMonth.getFullYear()}`;
+    }
+    const days = this.getWeekDays();
+    if (!days.length) return '';
+    const first = new Date(days[0].date + 'T00:00:00');
+    const last  = new Date(days[6].date + 'T00:00:00');
+    const fm = this.monthNames[first.getMonth()].slice(0, 3);
+    const lm = this.monthNames[last.getMonth()].slice(0, 3);
+    return first.getMonth() === last.getMonth()
+      ? `${fm} ${first.getDate()}–${last.getDate()}`
+      : `${fm} ${first.getDate()} – ${lm} ${last.getDate()}`;
   }
 }

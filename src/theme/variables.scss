@@ -1,5 +1,47 @@
 /* Ionic Variables and Theming */
 :root {
+  /* ── UI-Upgrade design tokens ────────────────────────────── */
+  /* Backgrounds */
+  --app-bg:          #FAFAFA;   /* Anti-Flash White — page bg */
+  --surface:         #FFFFFF;   /* elevated cards */
+  --surface-muted:   #F5F5F5;   /* chips, inset rows, dividers */
+  --border-hairline: #ECECEC;   /* 1px card edge on light bg */
+
+  /* Brand / interactive (cyan) */
+  --primary:         #00A6CB;   /* selected day, active tab, rail, buttons */
+  --primary-glow:    #0DCAF0;   /* gradient tip / glow ONLY — never text */
+  --primary-gradient: linear-gradient(135deg, #00A6CB 0%, #0DCAF0 100%);
+
+  /* Semantic colours — never use --primary for these */
+  --spent:           #EA0029;   /* money out / NETS red */
+  --income:          #16B364;   /* money in */
+  --predicted:       #F5A524;   /* AI-predicted / planned (amber) */
+
+  /* Text */
+  --text-primary:    #0B1A2B;   /* headings, amounts (deep navy) */
+  --text-secondary:  #6B7280;   /* labels, captions, timestamps */
+
+  /* Card shadow system */
+  --card-shadow: 0 2px 10px rgba(11,26,43,0.06);
+
+  /* Spacing (8pt grid) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
+  /* Radius */
+  --radius-card: 20px;
+  --radius-chip: 12px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
+  /* ─────────────────────────────────────────────────────────── */
+
   /* NETS Brand Colors */
   --ion-color-primary: #0055A4;
   --ion-color-primary-rgb: 0, 85, 164;
