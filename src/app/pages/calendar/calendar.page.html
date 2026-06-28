@@ -1,6 +1,6 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="calendar-toolbar">
-    <ion-title>
+<ion-header class="ion-no-border" style="display: block;">
+  <ion-toolbar class="calendar-toolbar" style="--min-height: 56px;">
+    <ion-title style="height: 56px; display: flex; align-items: center;">
       <div class="toolbar-brand">
         <div class="brand-logo">
           <span class="logo-n">N</span>
@@ -19,7 +19,15 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="calendar-content" scroll-y="false">
+<ion-content class="calendar-content" scroll-y="true">
+  <!-- DNA Live Indicator -->
+  <div class="dna-status-bar" *ngIf="dnaLoaded$ | async">
+    <div class="dna-pulse">
+      <span class="pulse-dot"></span>
+      <span class="pulse-text">DNA Forecast Active</span>
+    </div>
+  </div>
+
   <!-- Month Navigator -->
   <div class="month-navigator animate-fade-in-up">
     <ion-button fill="clear" size="small" class="nav-btn" disabled>
@@ -68,35 +76,29 @@
 
   <!-- Calendar Grid -->
   <div class="calendar-grid animate-fade-in-up stagger-3">
-    <div *ngFor="let day of calendarDays; let i = index"
-         class="calendar-day"
-         [class.other-month]="!day.isCurrentMonth"
-         [class.today]="day.isToday"
-         [class.has-transactions]="day.hasTransactions"
-         [class.future-ai]="day.isFutureWithAI"
-         [class.has-pattern]="day.patterns.length > 0"
-         [class.spending-high]="day.totalSpent > 50"
-         [class.spending-medium]="day.totalSpent > 20 && day.totalSpent <= 50"
-         [style.animation-delay]="i * 0.01 + 's'"
-         (click)="onDayClick(day)">
+    <div *ngFor="let day of calendarDays; let i = index" class="calendar-day" [class.other-month]="!day.isCurrentMonth"
+      [class.today]="day.isToday" [class.has-transactions]="day.hasTransactions" [class.future-ai]="day.isFutureWithAI"
+      [class.has-pattern]="day.patterns.length > 0" [class.spending-high]="day.totalSpent > 50"
+      [class.spending-medium]="day.totalSpent > 20 && day.totalSpent <= 50" [style.animation-delay]="i * 0.01 + 's'"
+      (click)="onDayClick(day)">
 
-      <span class="day-number">{{ day.date }}</span>
+      <span class="day-number">{{ day.day }}</span>
 
-      <!-- Spending indicator -->
-      <div class="spending-ring" *ngIf="day.hasTransactions && day.totalSpent > 0"
-           [class.ring-high]="day.totalSpent > 50"
-           [class.ring-medium]="day.totalSpent > 20 && day.totalSpent <= 50">
+      <!-- AFTER: Show transaction count + amount -->
+      <div class="day-indicator">
+        <!-- Always show count if transactions exist -->
+        <span class="txn-count-badge" *ngIf="day.hasTransactions && !day.isFutureWithAI">
+          {{ day.transactionCount }} txns
+        </span>
+        <!-- Show amount too -->
+        <span class="spending-pill" *ngIf="day.hasTransactions && day.totalSpent > 0 && !day.isFutureWithAI">
+          ${{ day.totalSpent | number:'1.0-0' }}
+        </span>
       </div>
 
-      <!-- AI sparkle for future -->
+      <!-- AI sparkle for future predictions only -->
       <div class="ai-indicator" *ngIf="day.isFutureWithAI">
         <ion-icon name="sparkles" class="sparkle-icon"></ion-icon>
-      </div>
-
-      <!-- Pattern dots -->
-      <div class="pattern-dots" *ngIf="day.patterns.length > 0 && day.isFutureWithAI">
-        <span *ngFor="let p of day.patterns.slice(0,2)" class="pattern-dot"
-              [style.background]="getPatternDotColor(p)"></span>
       </div>
     </div>
   </div>
@@ -118,18 +120,17 @@
   </div>
 
   <!-- Today's Timeline -->
-  <div class="today-section animate-fade-in-up">
+  <div class="today-section animate-fade-in-up" *ngIf="todayTransactions.length > 0">
     <div class="section-header">
       <div class="section-title-group">
         <ion-icon name="time-outline" color="primary"></ion-icon>
         <h3>Today's Timeline</h3>
       </div>
-      <span class="today-date">{{ getDayName(todayStr) }}, 17 Jun</span>
+      <span class="today-date">{{ getDayName(todayStr) }}, {{ todayStr | date:'d MMM' }}</span>
     </div>
 
     <div class="timeline-list">
-      <div class="timeline-item" *ngFor="let t of userDnaService.getTransactionsByDate(todayStr); let last = last"
-           [class.last]="last">
+      <div class="timeline-item" *ngFor="let t of todayTransactions; let last = last" [class.last]="last">
         <div class="timeline-left">
           <div class="timeline-time">{{ t.time }}</div>
           <div class="timeline-line" *ngIf="!last"></div>
@@ -143,8 +144,14 @@
               <span class="timeline-title">{{ t.description }}</span>
               <span class="timeline-meta">{{ t.merchant }} · {{ t.category }}</span>
             </div>
-            <span class="timeline-amount" [class.income]="t.type === 'credit'">
-              {{ t.type === 'debit' ? '-' : '+' }}${{ t.amount | number:'1.2-2' }}
+            <!-- In Today's Timeline, replace the amount span: -->
+            <span class="timeline-amount" [class.income]="t.type === 'credit'" [class.planned-amount]="t.isPlanned">
+              <ng-container *ngIf="t.isPlanned">
+                <span class="est-label">est.</span>
+              </ng-container>
+              <ng-container *ngIf="!t.isPlanned && t.type === 'debit'">-</ng-container>
+              <ng-container *ngIf="!t.isPlanned && t.type === 'credit'">+</ng-container>
+              ${{ t.amount | number:'1.2-2' }}
             </span>
           </ion-card-content>
         </ion-card>
@@ -187,6 +194,147 @@
   <div style="height: 100px;"></div>
 </ion-content>
 
+<ion-modal [isOpen]="showDetailModal" (didDismiss)="closeDetailModal()" class="detail-modal timeline-modal">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="modal-toolbar">
+        <ion-buttons slot="start">
+          <ion-button (click)="closeDetailModal()" class="close-btn">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>{{ getDayName(selectedDate || '') }}</ion-title>
+        <ion-note slot="end" class="modal-date">{{ selectedDate }}</ion-note>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="detail-content timeline-content">
+      <!-- Empty state -->
+      <div class="empty-state" *ngIf="timelineItems.length === 0">
+        <ion-icon name="calendar-clear-outline" color="medium"></ion-icon>
+        <p>No activities for this day</p>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline-wrapper" *ngIf="timelineItems.length > 0">
+        <!-- Central spine -->
+        <div class="spine"></div>
+
+        <div class="timeline-item" *ngFor="let item of timelineItems; let i = index" [class.left]="i % 2 === 0"
+          [class.right]="i % 2 === 1" [class.planned]="item.kind === 'planned'" [class.paid]="item.kind === 'paid'"
+          [class.predicted]="item.kind === 'predicted'" [class.income]="item.kind === 'income'">
+
+          <!-- Year/time bubble (like 2012, 2013 in your reference) -->
+          <div class="time-bubble" (click)="toggleItem(item)">
+            {{ item.time }}
+          </div>
+
+          <!-- Node dot on spine -->
+          <div class="spine-dot"></div>
+
+          <!-- Content card -->
+          <div class="content-card" (click)="toggleItem(item)">
+            <div class="card-inner">
+              <!-- Icon circle -->
+              <div class="icon-circle">
+                <ion-icon [name]="item.icon"></ion-icon>
+              </div>
+
+              <div class="card-body">
+                <!-- Inside the modal's timeline item -->
+                <div class="card-top">
+                  <h3 class="card-title">{{ item.title }}</h3>
+                  <div class="card-actions">
+                    <!-- DELETE BUTTON: only for planned & predicted -->
+                    <ion-button *ngIf="item.kind === 'planned' || item.kind === 'predicted'" fill="clear" size="small"
+                      class="delete-btn" (click)="deleteTimelineItem(item, $event)">
+                      <ion-icon name="trash-outline" color="danger"></ion-icon>
+                    </ion-button>
+
+                    <span class="card-amount" [class.est]="item.kind === 'planned' || item.kind === 'predicted'">
+                      <ng-container *ngIf="item.kind === 'planned' || item.kind === 'predicted'">est. </ng-container>
+                      <ng-container *ngIf="item.kind === 'paid'">-</ng-container>
+                      <ng-container *ngIf="item.kind === 'income'">+</ng-container>
+                      ${{ item.amount | number:'1.2-2' }}
+                    </span>
+                  </div>
+                </div>
+
+                <p class="card-location">{{ item.location }}</p>
+
+                <div class="card-tags">
+                  <span class="tag" [class]="item.kind">{{ item.kind }}</span>
+                </div>
+
+                <!-- Expand hint -->
+                <div class="tap-hint" *ngIf="!item.expanded">
+                  <ion-icon name="chevron-down"></ion-icon>
+                  <span>Tap for details</span>
+                </div>
+
+                <!-- Expanded content -->
+                <div class="expanded-content" *ngIf="item.expanded" (click)="$event.stopPropagation()">
+                  <!-- Alternatives for planned/predicted -->
+                  <div class="alt-section" *ngIf="item.alternatives && item.alternatives.length > 0">
+                    <h4><ion-icon name="location-outline"></ion-icon> Nearby alternatives</h4>
+                    <div class="alt-card" *ngFor="let alt of item.alternatives">
+                      <img *ngIf="alt.photoUrl" [src]="alt.photoUrl" class="alt-img">
+                      <div class="alt-info">
+                        <strong>{{ alt.description }}</strong>
+                        <span>{{ alt.rating }}★ · {{ alt.distance }} · {{ alt.isOpen ? 'Open' : 'Closed' }}</span>
+                        <p>{{ alt.reason }}</p>
+                      </div>
+                      <span class="alt-price">${{ alt.estimatedCost }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Details for paid -->
+                  <div class="detail-section" *ngIf="item.kind === 'paid' || item.kind === 'income'">
+                    <h4><ion-icon name="receipt-outline"></ion-icon> Transaction Details</h4>
+                    <div class="detail-grid">
+                      <div><label>Merchant</label><span>{{ item.raw.merchant }}</span></div>
+                      <div><label>Category</label><span>{{ item.raw.category }}</span></div>
+                      <div><label>Payment</label><span>{{ item.raw.paymentMethod || 'NETS Pay' }}</span></div>
+                    </div>
+                  </div>
+
+                  <!-- Reason for predicted -->
+                  <div class="detail-section" *ngIf="item.kind === 'predicted'">
+                    <h4><ion-icon name="sparkles"></ion-icon> Why this prediction?</h4>
+                    <p class="reason-text">{{ item.reason }}</p>
+                    <div class="confidence-track">
+                      <div class="confidence-bar" [style.width.%]="item.confidence || 60"></div>
+                    </div>
+                    <span class="confidence-text">{{ item.confidence || 60 }}% confidence</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day summary -->
+      <div class="day-footer" *ngIf="timelineItems.length > 0">
+        <div class="footer-row">
+          <span class="label planned-label">Planned</span>
+          <span class="value">~${{ getPlannedTotal() | number:'1.2-2' }}</span>
+        </div>
+        <div class="footer-row">
+          <span class="label paid-label">Spent</span>
+          <span class="value">-${{ getPaidTotal() | number:'1.2-2' }}</span>
+        </div>
+        <div class="footer-divider"></div>
+        <div class="footer-row total">
+          <span>Day Total</span>
+          <span class="value">${{ getDayTotal() | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div style="height: 60px;"></div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
 <!-- Stats Modal -->
 <ion-modal [isOpen]="showStatsModal" (didDismiss)="closeStats()" class="stats-modal">
   <ng-template>
@@ -201,93 +349,29 @@
       </ion-toolbar>
     </ion-header>
     <ion-content class="stats-content">
-      <!-- Hero Stats -->
       <div class="stats-hero">
         <div class="hero-card">
           <span class="hero-label">Total Spent</span>
           <span class="hero-value">${{ monthStats.totalSpent | number:'1.2-2' }}</span>
-          <div class="hero-trend down">
-            <ion-icon name="trending-down-outline"></ion-icon>
-            <span>12% vs last month</span>
-          </div>
         </div>
-        <div class="hero-card">
+        <div class="hero-card income">
           <span class="hero-label">Total Income</span>
-          <span class="hero-value income">${{ monthStats.totalIncome | number:'1.2-2' }}</span>
-          <div class="hero-trend up">
-            <ion-icon name="trending-up-outline"></ion-icon>
-            <span>8% vs last month</span>
-          </div>
+          <span class="hero-value">${{ monthStats.totalIncome | number:'1.2-2' }}</span>
         </div>
       </div>
-
-      <!-- Category Breakdown -->
       <div class="breakdown-section">
         <h3 class="breakdown-title">By Category</h3>
         <div class="breakdown-list">
-          <div class="breakdown-item" *ngFor="let cat of categoryBreakdown; let i = index"
-               [style.animation-delay]="i * 0.05 + 's'">
+          <div class="breakdown-item" *ngFor="let cat of categoryBreakdown; let i = index">
             <div class="breakdown-header">
-              <div class="breakdown-icon" [style.background]="'hsl(' + (i * 60 + 200) + ', 70%, 90%)'">
-                <ion-icon [name]="getTransactionIcon(cat.name)" [style.color]="'hsl(' + (i * 60 + 200) + ', 70%, 40%)'"></ion-icon>
-              </div>
               <span class="breakdown-name">{{ cat.name }}</span>
               <span class="breakdown-amount">${{ cat.amount | number:'1.2-2' }}</span>
             </div>
             <div class="breakdown-bar-bg">
-              <div class="breakdown-bar-fill" [style.width.%]="(cat.amount / monthStats.totalSpent) * 100"
-                   [style.background]="'linear-gradient(90deg, hsl(' + (i * 60 + 200) + ', 70%, 50%), hsl(' + (i * 60 + 200) + ', 70%, 60%))'">
-              </div>
+              <div class="breakdown-bar-fill" [style.width.%]="(cat.amount / monthStats.totalSpent) * 100"></div>
             </div>
-            <span class="breakdown-percent">{{ (cat.amount / monthStats.totalSpent * 100) | number:'1.0-0' }}%</span>
           </div>
         </div>
-      </div>
-    </ion-content>
-  </ng-template>
-</ion-modal>
-
-<!-- Day Detail Modal -->
-<ion-modal [isOpen]="showDetailModal" (didDismiss)="closeDetailModal()" class="detail-modal">
-  <ng-template>
-    <ion-header class="ion-no-border">
-      <ion-toolbar class="modal-toolbar">
-        <ion-buttons slot="start">
-          <ion-button (click)="closeDetailModal()" class="close-btn">
-            <ion-icon name="arrow-back-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <ion-title>{{ getDayName(selectedDate || '') }}</ion-title>
-        <ion-note slot="end" class="modal-date">{{ selectedDate }}</ion-note>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="detail-content">
-      <div class="day-summary">
-        <div class="day-total">
-          <span class="day-total-label">Day Total</span>
-          <span class="day-total-value">
-            ${{ getSumDebits(selectedTransactions) | number:'1.2-2' }}
-          </span>
-        </div>
-      </div>
-      <div class="transaction-list">
-        <ion-card class="txn-card card-hover" *ngFor="let t of selectedTransactions" (click)="viewTransactionDetail(t)">
-          <ion-card-content class="txn-card-content">
-            <div class="txn-icon-wrapper" [class.income]="t.type === 'credit'">
-              <ion-icon [name]="getTransactionIcon(t.category)"></ion-icon>
-            </div>
-            <div class="txn-info">
-              <span class="txn-title">{{ t.description }}</span>
-              <span class="txn-meta">{{ t.time }} · {{ t.merchant }}</span>
-              <ion-badge [color]="t.type === 'credit' ? 'success' : 'danger'" class="txn-type-badge">
-                {{ t.type }}
-              </ion-badge>
-            </div>
-            <span class="txn-amount" [class.income]="t.type === 'credit'">
-              {{ t.type === 'debit' ? '-' : '+' }}${{ t.amount | number:'1.2-2' }}
-            </span>
-          </ion-card-content>
-        </ion-card>
       </div>
     </ion-content>
   </ng-template>
