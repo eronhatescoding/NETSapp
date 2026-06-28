@@ -15,6 +15,7 @@ export interface Transaction {
   tags?: string[];
   merchantId?: string;
   userId?: string;
+  isPlanned?: boolean;
 }
 
 export interface SpendingPattern {

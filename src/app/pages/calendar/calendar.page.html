@@ -84,17 +84,15 @@
 
       <span class="day-number">{{ day.day }}</span>
 
-      <!-- Single smart indicator -->
+      <!-- AFTER: Show transaction count + amount -->
       <div class="day-indicator">
-        <!-- Past day: show total spent -->
-        <span class="spending-pill" [class.high]="day.totalSpent > 50"
-          [class.medium]="day.totalSpent > 20 && day.totalSpent <= 50"
-          *ngIf="day.hasTransactions && day.totalSpent > 0 && !day.isFutureWithAI">
-          ${{ day.totalSpent | number:'1.0-0' }}
+        <!-- Always show count if transactions exist -->
+        <span class="txn-count-badge" *ngIf="day.hasTransactions && !day.isFutureWithAI">
+          {{ day.transactionCount }} txns
         </span>
-        <!-- Past day with patterns: show count -->
-        <span class="pattern-badge" *ngIf="day.patterns.length > 0 && !day.isFutureWithAI">
-          {{ day.patterns.length }}
+        <!-- Show amount too -->
+        <span class="spending-pill" *ngIf="day.hasTransactions && day.totalSpent > 0 && !day.isFutureWithAI">
+          ${{ day.totalSpent | number:'1.0-0' }}
         </span>
       </div>
 
@@ -146,8 +144,14 @@
               <span class="timeline-title">{{ t.description }}</span>
               <span class="timeline-meta">{{ t.merchant }} · {{ t.category }}</span>
             </div>
-            <span class="timeline-amount" [class.income]="t.type === 'credit'">
-              {{ t.type === 'debit' ? '-' : '+' }}${{ t.amount | number:'1.2-2' }}
+            <!-- In Today's Timeline, replace the amount span: -->
+            <span class="timeline-amount" [class.income]="t.type === 'credit'" [class.planned-amount]="t.isPlanned">
+              <ng-container *ngIf="t.isPlanned">
+                <span class="est-label">est.</span>
+              </ng-container>
+              <ng-container *ngIf="!t.isPlanned && t.type === 'debit'">-</ng-container>
+              <ng-container *ngIf="!t.isPlanned && t.type === 'credit'">+</ng-container>
+              ${{ t.amount | number:'1.2-2' }}
             </span>
           </ion-card-content>
         </ion-card>
@@ -190,8 +194,7 @@
   <div style="height: 100px;"></div>
 </ion-content>
 
-<!-- Day Detail Modal -->
-<ion-modal [isOpen]="showDetailModal" (didDismiss)="closeDetailModal()" class="detail-modal">
+<ion-modal [isOpen]="showDetailModal" (didDismiss)="closeDetailModal()" class="detail-modal timeline-modal">
   <ng-template>
     <ion-header class="ion-no-border">
       <ion-toolbar class="modal-toolbar">
@@ -204,113 +207,127 @@
         <ion-note slot="end" class="modal-date">{{ selectedDate }}</ion-note>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="detail-content">
-      <!-- DNA Prediction Summary (for future/today) -->
-      <div class="prediction-hero" *ngIf="selectedPrediction">
-        <div class="prediction-card">
-          <div class="prediction-header">
-            <ion-icon name="sparkles" color="warning"></ion-icon>
-            <span class="prediction-label">{{ selectedDate === todayStr ? 'Still to Come' : 'DNA Forecast' }}</span>
-            <span class="prediction-confidence">{{ selectedPrediction.confidence }}% confidence</span>
-          </div>
-          <p class="prediction-summary">{{ selectedPrediction.aiSummary }}</p>
-          <div class="prediction-spend">
-            <span class="spend-label">Predicted spend:</span>
-            <span class="spend-value">${{ selectedPrediction.totalPredictedSpend | number:'1.2-2' }}</span>
-          </div>
-        </div>
+
+<ion-content class="detail-content timeline-content">
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="timelineItems.length === 0">
+    <ion-icon name="calendar-clear-outline" color="medium"></ion-icon>
+    <p>No activities for this day</p>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline-wrapper" *ngIf="timelineItems.length > 0">
+    <!-- Central spine -->
+    <div class="spine"></div>
+
+    <div class="timeline-item" *ngFor="let item of timelineItems; let i = index"
+      [class.left]="i % 2 === 0"
+      [class.right]="i % 2 === 1"
+      [class.planned]="item.kind === 'planned'"
+      [class.paid]="item.kind === 'paid'"
+      [class.predicted]="item.kind === 'predicted'"
+      [class.income]="item.kind === 'income'">
+
+      <!-- Year/time bubble (like 2012, 2013 in your reference) -->
+      <div class="time-bubble" (click)="toggleItem(item)">
+        {{ item.time }}
       </div>
 
-      <!-- Predicted Activities (for future days) -->
-      <div class="predicted-section"
-        *ngIf="selectedPrediction?.predictedActivities && selectedPrediction!.predictedActivities.length > 0">
-        <h4 class="section-subtitle">Predicted Activities</h4>
-        <div class="predicted-list">
-          <div class="predicted-item" *ngFor="let activity of selectedPrediction!.predictedActivities">
-            <div class="predicted-time">{{ activity.time }}</div>
-            <div class="predicted-card">
-              <div class="predicted-main">
-                <div class="predicted-icon" [class.pattern]="activity.isFromPattern"
-                  [class.dna]="!activity.isFromPattern">
-                  <ion-icon [name]="activity.isFromPattern ? 'trending-up-outline' : 'flame-outline'"></ion-icon>
-                </div>
-                <div class="predicted-info">
-                  <span class="predicted-title">{{ activity.description }}</span>
-                  <span class="predicted-reason">{{ activity.reason }}</span>
-                  <span class="predicted-weather" *ngIf="activity.weatherNote">
-                    <ion-icon name="rainy-outline"></ion-icon>
-                    {{ activity.weatherNote }}
-                  </span>
-                </div>
-                <div class="predicted-cost">
-                  <span class="cost-amount">~${{ activity.estimatedCost | number:'1.2-2' }}</span>
-                  <span class="cost-confidence">{{ activity.confidence }}%</span>
-                </div>
-              </div>
-              <!-- Real Alternatives -->
-              <div class="alternatives" *ngIf="activity.alternatives.length > 0">
-                <div class="alt-header">
-                  <ion-icon name="location-outline" color="primary"></ion-icon>
-                  <span>Real alternatives nearby</span>
-                </div>
-                <div class="alt-item" *ngFor="let alt of activity.alternatives">
-                  <div class="alt-photo" *ngIf="alt.photoUrl">
-                    <img [src]="alt.photoUrl" alt="">
-                  </div>
+      <!-- Node dot on spine -->
+      <div class="spine-dot"></div>
+
+      <!-- Content card -->
+      <div class="content-card" (click)="toggleItem(item)">
+        <div class="card-inner">
+          <!-- Icon circle -->
+          <div class="icon-circle">
+            <ion-icon [name]="item.icon"></ion-icon>
+          </div>
+
+          <div class="card-body">
+            <div class="card-top">
+              <h3 class="card-title">{{ item.title }}</h3>
+              <span class="card-amount" [class.est]="item.kind === 'planned' || item.kind === 'predicted'">
+                <ng-container *ngIf="item.kind === 'planned' || item.kind === 'predicted'">est. </ng-container>
+                <ng-container *ngIf="item.kind === 'paid'">-</ng-container>
+                <ng-container *ngIf="item.kind === 'income'">+</ng-container>
+                ${{ item.amount | number:'1.2-2' }}
+              </span>
+            </div>
+
+            <p class="card-location">{{ item.location }}</p>
+
+            <div class="card-tags">
+              <span class="tag" [class]="item.kind">{{ item.kind }}</span>
+            </div>
+
+            <!-- Expand hint -->
+            <div class="tap-hint" *ngIf="!item.expanded">
+              <ion-icon name="chevron-down"></ion-icon>
+              <span>Tap for details</span>
+            </div>
+
+            <!-- Expanded content -->
+            <div class="expanded-content" *ngIf="item.expanded" (click)="$event.stopPropagation()">
+              <!-- Alternatives for planned/predicted -->
+              <div class="alt-section" *ngIf="item.alternatives && item.alternatives.length > 0">
+                <h4><ion-icon name="location-outline"></ion-icon> Nearby alternatives</h4>
+                <div class="alt-card" *ngFor="let alt of item.alternatives">
+                  <img *ngIf="alt.photoUrl" [src]="alt.photoUrl" class="alt-img">
                   <div class="alt-info">
-                    <span class="alt-desc">{{ alt.description }}</span>
-                    <span class="alt-meta">
-                      <ion-icon name="star" color="warning"></ion-icon> {{ alt.rating }}
-                      · {{ alt.distance }}
-                      · {{ alt.isOpen ? 'Open now' : 'Closed' }}
-                    </span>
-                    <span class="alt-reason">{{ alt.reason }}</span>
+                    <strong>{{ alt.description }}</strong>
+                    <span>{{ alt.rating }}★ · {{ alt.distance }} · {{ alt.isOpen ? 'Open' : 'Closed' }}</span>
+                    <p>{{ alt.reason }}</p>
                   </div>
-                  <span class="alt-cost">${{ alt.estimatedCost }}</span>
+                  <span class="alt-price">${{ alt.estimatedCost }}</span>
                 </div>
+              </div>
+
+              <!-- Details for paid -->
+              <div class="detail-section" *ngIf="item.kind === 'paid' || item.kind === 'income'">
+                <h4><ion-icon name="receipt-outline"></ion-icon> Transaction Details</h4>
+                <div class="detail-grid">
+                  <div><label>Merchant</label><span>{{ item.raw.merchant }}</span></div>
+                  <div><label>Category</label><span>{{ item.raw.category }}</span></div>
+                  <div><label>Payment</label><span>{{ item.raw.paymentMethod || 'NETS Pay' }}</span></div>
+                </div>
+              </div>
+
+              <!-- Reason for predicted -->
+              <div class="detail-section" *ngIf="item.kind === 'predicted'">
+                <h4><ion-icon name="sparkles"></ion-icon> Why this prediction?</h4>
+                <p class="reason-text">{{ item.reason }}</p>
+                <div class="confidence-track">
+                  <div class="confidence-bar" [style.width.%]="item.confidence || 60"></div>
+                </div>
+                <span class="confidence-text">{{ item.confidence || 60 }}% confidence</span>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Actual Transactions (past/today) -->
-      <div class="day-summary" *ngIf="selectedTransactions.length > 0">
-        <div class="day-total">
-          <span class="day-total-label">Day Total</span>
-          <span class="day-total-value">
-            ${{ getSumDebits(selectedTransactions) | number:'1.2-2' }}
-          </span>
-        </div>
-      </div>
-      <div class="transaction-list" *ngIf="selectedTransactions.length > 0">
-        <h4 class="section-subtitle">Transactions</h4>
-        <ion-card class="txn-card card-hover" *ngFor="let t of selectedTransactions" (click)="viewTransactionDetail(t)">
-          <ion-card-content class="txn-card-content">
-            <div class="txn-icon-wrapper" [class.income]="t.type === 'credit'">
-              <ion-icon [name]="getTransactionIcon(t.category)"></ion-icon>
-            </div>
-            <div class="txn-info">
-              <span class="txn-title">{{ t.description }}</span>
-              <span class="txn-meta">{{ t.time }} · {{ t.merchant }}</span>
-              <ion-badge [color]="t.type === 'credit' ? 'success' : 'danger'" class="txn-type-badge">
-                {{ t.type }}
-              </ion-badge>
-            </div>
-            <span class="txn-amount" [class.income]="t.type === 'credit'">
-              {{ t.type === 'debit' ? '-' : '+' }}${{ t.amount | number:'1.2-2' }}
-            </span>
-          </ion-card-content>
-        </ion-card>
-      </div>
+  <!-- Day summary -->
+  <div class="day-footer" *ngIf="timelineItems.length > 0">
+    <div class="footer-row">
+      <span class="label planned-label">Planned</span>
+      <span class="value">~${{ getPlannedTotal() | number:'1.2-2' }}</span>
+    </div>
+    <div class="footer-row">
+      <span class="label paid-label">Spent</span>
+      <span class="value">-${{ getPaidTotal() | number:'1.2-2' }}</span>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-row total">
+      <span>Day Total</span>
+      <span class="value">${{ getDayTotal() | number:'1.2-2' }}</span>
+    </div>
+  </div>
 
-      <!-- Empty state -->
-      <div class="empty-state"
-        *ngIf="selectedTransactions.length === 0 && (!selectedPrediction?.predictedActivities || selectedPrediction!.predictedActivities.length === 0)">
-        <ion-icon name="calendar-clear-outline" color="medium"></ion-icon>
-        <p>No data for this day</p>
-      </div>
-    </ion-content>
+  <div style="height: 60px;"></div>
+</ion-content>
   </ng-template>
 </ion-modal>
 <!-- Stats Modal -->

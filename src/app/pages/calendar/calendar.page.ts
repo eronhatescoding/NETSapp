@@ -7,6 +7,20 @@ import { CalendarDnaService, DayPrediction } from '../../data/calendar-dna.servi
 import { Transaction, SpendingPattern } from '../../models/transaction.model';
 import { PlacesApiService, RealAlternative } from '../../data/places-api.service';
 
+
+interface TimelineItem {
+  kind: 'planned' | 'paid' | 'predicted' | 'income';
+  time: string;
+  title: string;
+  location: string;
+  amount: number;
+  icon: string;
+  expanded: boolean;
+  confidence?: number;
+  reason?: string;
+  alternatives?: any[];
+  raw: any;
+}
 interface CalendarDay {
   date: string;
   day: number;
@@ -17,6 +31,7 @@ interface CalendarDay {
   isFutureWithAI: boolean;
   patterns: SpendingPattern[];
   prediction?: DayPrediction;
+  transactionCount: number;
 }
 
 // Alternative interface matching what the template expects
@@ -55,6 +70,8 @@ export class CalendarPage {
   selectedDate: string | null = null;
   selectedTransactions: Transaction[] = [];
   selectedPrediction: any = null;  // Changed from DayPrediction to any for flexibility
+
+  timelineItems: TimelineItem[] = [];
 
   // DNA integration
   dnaLoaded$: Observable<boolean>;
@@ -135,14 +152,14 @@ export class CalendarPage {
     const isToday = dateStr === this.todayStr;
     const todayDate = new Date(this.todayStr + 'T00:00:00');
     const isFuture = date > todayDate;
-
     const transactions = this.userDnaService.getTransactionsByDate(dateStr);
     const dayPatterns = this.detectedPatterns.filter(p =>
       p.typicalDays.includes(date.getDay())
     );
 
+
     const totalSpent = transactions
-      .filter(t => t.type === 'debit')
+      .filter(t => t.type === 'debit' && !t.isPlanned)
       .reduce((s, t) => s + t.amount, 0);
     const isFutureWithAI = isFuture;
 
@@ -154,36 +171,19 @@ export class CalendarPage {
       hasTransactions: transactions.length > 0,
       totalSpent,
       isFutureWithAI,
-      patterns: dayPatterns
+      patterns: dayPatterns,
+      transactionCount: transactions.length
     };
   }
 
-async onDayClick(day: CalendarDay) {
-  this.selectedDate = day.date;
-  const txs = this.userDnaService.getTransactionsByDate(day.date);
+  // Replace your existing onDayClick with this
+  async onDayClick(day: CalendarDay) {
+    this.selectedDate = day.date;
+    this.showDetailModal = true;
 
-  if (day.isToday) {
-    // HYBRID: always show today — real transactions + future predictions for remaining time
-    this.selectedTransactions = txs;
-    this.selectedPrediction = await this.generatePrediction(day.date, true);
-    this.showDetailModal = true;
-  } else if (txs.length > 0) {
-    // Past day: only real transactions
-    this.selectedTransactions = txs;
-    this.selectedPrediction = null;
-    this.showDetailModal = true;
-  } else if (day.isFutureWithAI) {
-    // Future empty day: full prediction
-    this.selectedPrediction = await this.generatePrediction(day.date, false);
-    this.selectedTransactions = this.selectedPrediction!.transactions || [];
-    this.showDetailModal = true;
-  } else {
-    // Empty day
-    this.selectedTransactions = [];
-    this.selectedPrediction = null;
-    this.showDetailModal = true;
+    // Build timeline from transactions + predictions
+    this.timelineItems = await this.buildTimeline(day);
   }
-}
 
   closeDetailModal() {
     this.showDetailModal = false;
@@ -248,7 +248,7 @@ async onDayClick(day: CalendarDay) {
 
   getSumDebits(transactions: Transaction[]): number {
     return transactions
-      .filter(t => t.type === 'debit')
+      .filter(t => t.type === 'debit' && !t.isPlanned)
       .reduce((sum, t) => sum + t.amount, 0);
   }
 
@@ -467,4 +467,87 @@ async onDayClick(day: CalendarDay) {
       { description: 'Local favorite', reason: 'Based on your DNA', estimatedCost: 10, savings: 0 }
     ];
   }
+  isRealTxn(t: Transaction): boolean {
+    return !t.isPlanned;
+  }
+
+  isPlannedTxn(t: Transaction): boolean {
+    return !!t.isPlanned;
+  }
+  // Add this new method
+  private async buildTimeline(day: CalendarDay): Promise<TimelineItem[]> {
+    const items: TimelineItem[] = [];
+    const txs = this.userDnaService.getTransactionsByDate(day.date);
+
+    // Add real transactions (paid + income)
+    for (const t of txs) {
+      items.push({
+        kind: t.type === 'credit' ? 'income' : (t.isPlanned ? 'planned' : 'paid'),
+        time: t.time,
+        title: t.description,
+        location: t.merchant || t.location || 'Singapore',
+        amount: t.amount,
+        icon: this.getTransactionIcon(t.category),
+        expanded: false,
+        raw: t
+      });
+    }
+
+    // Add AI predictions for today and future
+    if (day.isToday || day.isFutureWithAI) {
+      const prediction = await this.generatePrediction(day.date, day.isToday);
+      for (const act of prediction.predictedActivities || []) {
+        items.push({
+          kind: 'predicted',
+          time: act.time,
+          title: act.description,
+          location: 'Based on your DNA',
+          amount: act.estimatedCost,
+          icon: act.isFromPattern ? 'trending-up-outline' : 'flame-outline',
+          expanded: false,
+          confidence: act.confidence,
+          reason: act.reason,
+          alternatives: act.alternatives,
+          raw: act
+        });
+      }
+    }
+
+    // Sort chronologically
+    items.sort((a, b) => {
+      const [ha, ma] = a.time.split(':').map(Number);
+      const [hb, mb] = b.time.split(':').map(Number);
+      return (ha * 60 + ma) - (hb * 60 + mb);
+    });
+
+    return items;
+  }
+  toggleItem(item: TimelineItem) {
+    item.expanded = !item.expanded;
+  }
+  getItemBadgeColor(kind: string): string {
+  switch (kind) {
+    case 'planned': return 'tertiary';
+    case 'paid': return 'danger';
+    case 'predicted': return 'warning';
+    case 'income': return 'success';
+    default: return 'medium';
+  }
+}
+
+getPlannedTotal(): number {
+  return this.timelineItems
+    .filter(i => i.kind === 'planned' || i.kind === 'predicted')
+    .reduce((s, i) => s + i.amount, 0);
+}
+
+getPaidTotal(): number {
+  return this.timelineItems
+    .filter(i => i.kind === 'paid')
+    .reduce((s, i) => s + i.amount, 0);
+}
+
+getDayTotal(): number {
+  return this.getPaidTotal();
+}
 }

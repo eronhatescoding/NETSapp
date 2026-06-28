@@ -1,7 +1,6 @@
-
 /* DNA Status Bar */
 .dna-status-bar {
-  background: linear-gradient(90deg, rgba(0,85,164,0.08), rgba(227,24,55,0.08));
+  background: linear-gradient(90deg, rgba(0, 85, 164, 0.08), rgba(227, 24, 55, 0.08));
   padding: 6px 16px;
   display: flex;
   justify-content: center;
@@ -31,8 +30,17 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
 }
 
 /* DNA Loading State */
@@ -71,7 +79,7 @@
     background: white;
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0,85,164,0.12);
+    box-shadow: 0 8px 32px rgba(0, 85, 164, 0.12);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 
     &:active {
@@ -87,7 +95,7 @@
       padding: 16px;
 
       .hero-badge {
-        background: rgba(255,255,255,0.95);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         padding: 6px 12px;
         border-radius: 20px;
@@ -97,7 +105,7 @@
         font-size: 12px;
         font-weight: 700;
         color: #E31837;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
         ion-icon {
           font-size: 14px;
@@ -105,12 +113,12 @@
       }
 
       .hero-score {
-        background: rgba(255,255,255,0.95);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         border-radius: 16px;
         padding: 8px 14px;
         text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
         .score-number {
           display: block;
@@ -173,7 +181,7 @@
         flex-wrap: wrap;
 
         .tag-chip {
-          --background: rgba(0,85,164,0.08);
+          --background: rgba(0, 85, 164, 0.08);
           --color: #0055A4;
           font-size: 11px;
           font-weight: 600;
@@ -214,7 +222,7 @@
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   position: relative;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
@@ -223,8 +231,8 @@
   }
 
   &.featured-card {
-    border: 2px solid rgba(0,85,164,0.15);
-    box-shadow: 0 4px 20px rgba(0,85,164,0.1);
+    border: 2px solid rgba(0, 85, 164, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 85, 164, 0.1);
   }
 
   .dna-badge {
@@ -265,7 +273,7 @@
     gap: 4px;
     padding: 4px 8px;
     border-radius: 8px;
-    background: rgba(255,193,7,0.15);
+    background: rgba(255, 193, 7, 0.15);
     color: #f57f17;
     font-size: 10px;
     font-weight: 600;
@@ -324,7 +332,7 @@
         font-size: 10px;
         font-weight: 600;
         color: #0055A4;
-        background: rgba(0,85,164,0.08);
+        background: rgba(0, 85, 164, 0.08);
         padding: 3px 8px;
         border-radius: 6px;
         text-transform: capitalize;
@@ -397,10 +405,10 @@
   border-radius: 16px;
   overflow: hidden;
   margin-bottom: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 
   &.featured {
-    border: 2px solid rgba(227,24,55,0.2);
+    border: 2px solid rgba(227, 24, 55, 0.2);
   }
 
   .event-image {
@@ -492,7 +500,7 @@
   .modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
   }
 
@@ -555,13 +563,14 @@
           align-items: center;
           justify-content: center;
           margin-bottom: 12px;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 
           &.high-match {
             background: linear-gradient(135deg, #0055A4, #0078D4);
-            box-shadow: 0 4px 16px rgba(0,85,164,0.25);
+            box-shadow: 0 4px 16px rgba(0, 85, 164, 0.25);
 
-            .dna-score, .dna-label {
+            .dna-score,
+            .dna-label {
               color: white;
             }
           }
@@ -641,7 +650,7 @@
           display: flex;
           align-items: center;
           gap: 8px;
-          background: rgba(255,193,7,0.1);
+          background: rgba(255, 193, 7, 0.1);
           padding: 12px;
           border-radius: 12px;
           font-size: 13px;
@@ -661,7 +670,7 @@
       .nets-primary-btn {
         --background: linear-gradient(135deg, #0055A4, #003D7A);
         --border-radius: 14px;
-        --box-shadow: 0 4px 16px rgba(0,85,164,0.25);
+        --box-shadow: 0 4px 16px rgba(0, 85, 164, 0.25);
         font-weight: 700;
         height: 52px;
       }
@@ -674,9 +683,15 @@
 }
 
 @keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
+
 /* Explore Header */
 .explore-header {
   ion-toolbar {
@@ -688,7 +703,7 @@
 /* Search */
 .search-wrap {
   padding: 8px 16px;
-  
+
   .explore-search {
     --background: #f2f2f7;
     --border-radius: 12px;
@@ -732,7 +747,7 @@
 /* Skeleton Loading */
 .skeleton-list {
   padding: 0 16px;
-  
+
   .skeleton-card {
     margin-bottom: 16px;
   }
@@ -744,19 +759,19 @@
   border-radius: 20px;
   overflow: hidden;
   background: white;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+
   .hero-image {
     height: 200px;
     background-size: cover;
     background-position: center;
     position: relative;
-    
+
     .hero-overlay {
       position: absolute;
       top: 12px;
       left: 12px;
-      
+
       .hero-badge {
         display: flex;
         align-items: center;
@@ -767,43 +782,43 @@
         border-radius: 20px;
         font-size: 13px;
         font-weight: 700;
-        
+
         ion-icon {
           font-size: 14px;
         }
       }
     }
   }
-  
+
   .hero-info {
     padding: 16px;
-    
+
     .hero-title {
       font-size: 18px;
       font-weight: 700;
       color: #1a1a1a;
       margin: 0 0 6px;
     }
-    
+
     .hero-meta {
       font-size: 13px;
       color: #8e8e93;
       margin: 0 0 8px;
     }
-    
+
     .hero-reason {
       font-size: 13px;
       color: #0055A4;
       font-weight: 500;
       margin: 0 0 12px;
     }
-    
+
     .hero-footer {
       .hero-price {
         font-size: 16px;
         font-weight: 700;
         color: #1a1a1a;
-        
+
         &.free {
           color: #22C55E;
         }
@@ -815,7 +830,7 @@
 /* Event List */
 .event-list {
   padding: 0 16px;
-  
+
   .event-card {
     display: flex;
     gap: 12px;
@@ -823,77 +838,92 @@
     border-radius: 16px;
     padding: 12px;
     margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
     .event-image {
       width: 80px;
       height: 80px;
       border-radius: 12px;
       overflow: hidden;
       flex-shrink: 0;
-      
+
       img {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
     }
-    
+
     .event-content {
       flex: 1;
-      
+
       .event-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 4px;
-        
+
         .event-category {
           font-size: 11px;
           color: #8e8e93;
           text-transform: uppercase;
           font-weight: 600;
         }
-        
+
         .event-match {
           font-size: 12px;
           font-weight: 700;
           padding: 2px 8px;
           border-radius: 10px;
-          
-          &.match-success { background: #dcfce7; color: #16a34a; }
-          &.match-primary { background: #dbeafe; color: #0055A4; }
-          &.match-warning { background: #fef3c7; color: #d97706; }
-          &.match-medium { background: #f3f4f6; color: #6b7280; }
+
+          &.match-success {
+            background: #dcfce7;
+            color: #16a34a;
+          }
+
+          &.match-primary {
+            background: #dbeafe;
+            color: #0055A4;
+          }
+
+          &.match-warning {
+            background: #fef3c7;
+            color: #d97706;
+          }
+
+          &.match-medium {
+            background: #f3f4f6;
+            color: #6b7280;
+          }
         }
       }
-      
+
       .event-title {
         font-size: 15px;
         font-weight: 700;
         color: #1a1a1a;
         margin: 0 0 4px;
       }
-      
+
       .event-meta {
         font-size: 12px;
         color: #8e8e93;
         margin: 0 0 4px;
       }
-      
+
       .event-reason {
         font-size: 12px;
         color: #0055A4;
         font-weight: 500;
         margin: 0 0 8px;
       }
-      
+
       .event-footer {
         .event-price {
           font-size: 14px;
           font-weight: 700;
           color: #1a1a1a;
-          
+
           &.free {
             color: #22C55E;
           }
@@ -906,7 +936,7 @@
 /* Activity List */
 .activity-list {
   padding: 0 16px;
-  
+
   .activity-card {
     display: flex;
     gap: 12px;
@@ -914,8 +944,8 @@
     border-radius: 16px;
     padding: 14px;
     margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
     .activity-icon {
       width: 44px;
       height: 44px;
@@ -925,68 +955,83 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      
+
       ion-icon {
         color: #0055A4;
         font-size: 20px;
       }
     }
-    
+
     .activity-content {
       flex: 1;
-      
+
       .activity-header {
         display: flex;
         justify-content: space-between;
         margin-bottom: 4px;
-        
+
         .activity-category {
           font-size: 11px;
           color: #8e8e93;
           text-transform: uppercase;
         }
-        
+
         .activity-match {
           font-size: 12px;
           font-weight: 700;
           padding: 2px 8px;
           border-radius: 10px;
-          
-          &.match-success { background: #dcfce7; color: #16a34a; }
-          &.match-primary { background: #dbeafe; color: #0055A4; }
-          &.match-warning { background: #fef3c7; color: #d97706; }
-          &.match-medium { background: #f3f4f6; color: #6b7280; }
+
+          &.match-success {
+            background: #dcfce7;
+            color: #16a34a;
+          }
+
+          &.match-primary {
+            background: #dbeafe;
+            color: #0055A4;
+          }
+
+          &.match-warning {
+            background: #fef3c7;
+            color: #d97706;
+          }
+
+          &.match-medium {
+            background: #f3f4f6;
+            color: #6b7280;
+          }
         }
       }
-      
+
       .activity-title {
         font-size: 15px;
         font-weight: 700;
         margin: 0 0 4px;
       }
-      
+
       .activity-location {
         font-size: 12px;
         color: #8e8e93;
         margin: 0 0 4px;
       }
-      
+
       .activity-reason {
         font-size: 12px;
         color: #0055A4;
         font-weight: 500;
         margin: 0 0 8px;
       }
-      
+
       .activity-footer {
         display: flex;
         gap: 8px;
-        
+
         .activity-cost {
           font-size: 14px;
           font-weight: 700;
         }
-        
+
         .activity-weather {
           font-size: 11px;
           color: #f59e0b;
@@ -1007,16 +1052,16 @@
       background-size: cover;
       background-position: center;
       position: relative;
-      
+
       .event-hero-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
         display: flex;
         align-items: flex-end;
         justify-content: center;
         padding-bottom: 20px;
-        
+
         .dna-circle {
           width: 80px;
           height: 80px;
@@ -1026,14 +1071,14 @@
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-          
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+
           .dna-score {
             font-size: 24px;
             font-weight: 800;
             color: #0055A4;
           }
-          
+
           .dna-label {
             font-size: 10px;
             color: #8e8e93;
@@ -1043,47 +1088,47 @@
       }
     }
   }
-  
+
   .event-detail {
     padding: 20px;
-    
+
     .detail-title {
       font-size: 22px;
       font-weight: 700;
       margin: 0 0 12px;
     }
-    
+
     .detail-meta {
       display: flex;
       gap: 16px;
       margin-bottom: 16px;
-      
+
       span {
         display: flex;
         align-items: center;
         gap: 6px;
         font-size: 14px;
         color: #666;
-        
+
         ion-icon {
           color: #0055A4;
         }
       }
     }
-    
+
     .detail-description {
       font-size: 15px;
       color: #444;
       line-height: 1.5;
       margin-bottom: 16px;
     }
-    
+
     .detail-tags {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 20px;
-      
+
       .tag-chip {
         background: #f2f2f7;
         color: #0055A4;
@@ -1093,45 +1138,49 @@
         font-weight: 600;
       }
     }
-    
+
     .detail-price-row {
       display: flex;
       gap: 16px;
       margin-bottom: 24px;
-      
-      .price-block, .match-block {
+
+      .price-block,
+      .match-block {
         flex: 1;
         background: #f8f9fa;
         padding: 16px;
         border-radius: 16px;
         text-align: center;
-        
-        .price-label, .match-label {
+
+        .price-label,
+        .match-label {
           font-size: 12px;
           color: #8e8e93;
           text-transform: uppercase;
           display: block;
           margin-bottom: 4px;
         }
-        
-        .price-value, .match-value {
+
+        .price-value,
+        .match-value {
           font-size: 24px;
           font-weight: 800;
           color: #1a1a1a;
-          
+
           &.free {
             color: #22C55E;
           }
         }
       }
     }
-    
+
     .action-buttons {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      
-      .btn-predict, .btn-buy {
+
+      .btn-predict,
+      .btn-buy {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1142,20 +1191,48 @@
         font-size: 16px;
         font-weight: 700;
         cursor: pointer;
-        
+
         ion-icon {
           font-size: 20px;
         }
       }
-      
+
       .btn-predict {
         background: #f2f2f7;
         color: #0055A4;
       }
-      
+
       .btn-buy {
         background: linear-gradient(135deg, #0055A4, #0078D4);
         color: white;
+      }
+
+    }
+
+    .picker-section {
+      margin: 20px 0;
+      padding: 16px;
+      background: rgba(var(--ion-color-primary-rgb), 0.05);
+      border-radius: 16px;
+
+      .section-subtitle {
+        margin: 0 0 12px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ion-color-medium);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .picker-item {
+        --background: transparent;
+        --padding-start: 0;
+        --inner-padding-end: 0;
+        margin-bottom: 8px;
+
+        ion-label {
+          font-weight: 500;
+        }
       }
     }
   }

@@ -95,7 +95,7 @@ export class PayPage {
     this.phase = 'paying';
 
     const now     = new Date();
-    const date    = now.toISOString().split('T')[0];
+     const date    = this.toLocalDateStr(now);
     const time    = now.toTimeString().slice(0, 5);
     const amount  = this.parsedAmount;
     const merchant = this.selectedMerchant;
@@ -172,5 +172,11 @@ export class PayPage {
     if (m.category === 'Transport')             return 'Transport';
     if (m.category === 'Lifestyle & Services')  return 'Subscriptions';
     return m.category;
+  }
+    private toLocalDateStr(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 }

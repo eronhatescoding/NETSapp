@@ -6,10 +6,11 @@ ion-header {
     --min-height: 56px;
     --padding-start: 16px;
     --padding-end: 16px;
-    
+
     ion-title {
       padding: 0;
-      font-size: 0; /* Remove default title sizing */
+      font-size: 0;
+      /* Remove default title sizing */
     }
   }
 }
@@ -18,22 +19,33 @@ ion-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   .brand-logo {
     display: flex;
     gap: 2px;
-    
+
     span {
       font-size: 20px;
       font-weight: 800;
-      
-      &.logo-n { color: #0055A4; }
-      &.logo-e { color: #0078D4; }
-      &.logo-t { color: #00A8E8; }
-      &.logo-s { color: #E31837; }
+
+      &.logo-n {
+        color: #0055A4;
+      }
+
+      &.logo-e {
+        color: #0078D4;
+      }
+
+      &.logo-t {
+        color: #00A8E8;
+      }
+
+      &.logo-s {
+        color: #E31837;
+      }
     }
   }
-  
+
   .toolbar-subtitle {
     font-size: 14px;
     font-weight: 600;
@@ -45,7 +57,7 @@ ion-header {
 .stats-btn {
   --padding-start: 8px;
   --padding-end: 8px;
-  
+
   ion-icon {
     font-size: 22px;
     color: #0055A4;
@@ -66,13 +78,13 @@ ion-content.calendar-content {
   background: white;
   margin: 8px 12px 0;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
   .nav-btn {
     --color: #0055A4;
     --padding-start: 4px;
     --padding-end: 4px;
-    
+
     &[disabled] {
       opacity: 0.3;
     }
@@ -110,7 +122,7 @@ ion-content.calendar-content {
     background: white;
     border-radius: 14px;
     padding: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
     ion-icon {
       font-size: 20px;
@@ -158,6 +170,7 @@ ion-content.calendar-content {
     }
   }
 }
+
 /* Calendar Grid - ensure future days are visible */
 .calendar-grid {
   display: grid;
@@ -165,7 +178,8 @@ ion-content.calendar-content {
   gap: 4px;
   padding: 0 12px;
   margin-bottom: 16px;
-  min-height: 300px; /* Ensure grid has height */
+  min-height: 300px;
+  /* Ensure grid has height */
 }
 
 .calendar-day {
@@ -182,125 +196,147 @@ ion-content.calendar-content {
   min-height: 48px;
   border: 1px solid transparent;
 
-  &:active {
-    transform: scale(0.95);
+  .day-number {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a; // All dates black
+    z-index: 1;
+    position: relative; // Needed for the highlight behind
   }
 
-  /* Today highlight */
   &.today {
-    background: linear-gradient(135deg, #0055A4, #0078D4);
-    box-shadow: 0 4px 12px rgba(0,85,164,0.3);
+    background: white; // Remove blue gradient
+    box-shadow: 0 2px 8px rgba(227, 24, 55, 0.15);
+    border: 0.5px solid #1b141588;
 
     .day-number {
-      color: white;
+      color: #1a1a1a;
       font-weight: 800;
+
+      /* Red highlighter behind the number */
+      &::before {
+        content: '';
+        position: absolute;
+        left: -4px;
+        right: -4px;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 60%;
+        background: rgba(227, 24, 55, 0.8); // Red marker ink
+        border-radius: 3px;
+        z-index: -1;
+      }
     }
   }
 
-  /* Other month - slightly faded but still visible */
   &.other-month {
     opacity: 0.4;
     background: #f8f9fa;
 
     .day-number {
-      color: #8e8e93;
+      color: #8e8e93; // Gray for other month, not black
     }
   }
 
-  /* Future days with AI - make them stand out */
-  &.future-ai {
-    background: linear-gradient(135deg, #fefce8, #fef9c3) !important;
-    border: 2px solid #fbbf24;
-    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.2);
-
-    .day-number {
-      color: #92400e;
-      font-weight: 700;
-    }
-
-    &:hover {
-      box-shadow: 0 4px 16px rgba(251, 191, 36, 0.4);
-      transform: translateY(-2px);
-    }
-  }
-
-  /* Has transactions */
   &.has-transactions {
     .day-number {
-      color: #0055A4;
+      color: #1a1a1a; // Black, not blue
+      font-weight: 600;
+    }
+  }
+
+  /* Future AI days — keep amber text */
+  &.future-ai {
+    .day-number {
+      color: #92400e; // Keep amber for future
       font-weight: 700;
-    }
-  }
-
-    /* SINGLE unified indicator per day */
-  .day-indicator {
-    position: absolute;
-    bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .spending-pill {
-    font-size: 9px;
-    font-weight: 700;
-    color: #22C55E;
-    background: rgba(34, 197, 94, 0.1);
-    padding: 1px 4px;
-    border-radius: 4px;
-
-    &.high {
-      color: #E31837;
-      background: rgba(227, 24, 55, 0.1);
-    }
-    &.medium {
-      color: #0078D4;
-      background: rgba(0, 120, 212, 0.1);
-    }
-  }
-
-  /* Pattern count badge — shows how many patterns detected */
-  .pattern-badge {
-    font-size: 9px;
-    font-weight: 700;
-    color: white;
-    background: #0055A4;
-    padding: 1px 4px;
-    border-radius: 4px;
-    min-width: 14px;
-    text-align: center;
-  }
-
-  /* AI sparkle — future days only */
-  .ai-indicator {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-
-    .sparkle-icon {
-      font-size: 12px;
-      color: #f59e0b;
-      animation: sparkle 2s infinite;
-    }
-  }
-
-  .pattern-dots {
-    position: absolute;
-    bottom: 4px;
-    display: flex;
-    gap: 2px;
-
-    .pattern-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
     }
   }
 }
 
+/* SINGLE unified indicator per day */
+.day-indicator {
+  position: absolute;
+  bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.txn-count-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: white;
+  background: #0055A4;
+  padding: 1px 5px;
+  border-radius: 8px;
+  line-height: 1.2;
+  text-align: center;
+  min-width: 24px;
+}
+
+.spending-pill {
+  font-size: 9px;
+  font-weight: 700;
+  color: #22C55E;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 1px 4px;
+  border-radius: 4px;
+
+  &.high {
+    color: #E31837;
+    background: rgba(227, 24, 55, 0.1);
+  }
+
+  &.medium {
+    color: #0078D4;
+    background: rgba(0, 120, 212, 0.1);
+  }
+}
+
+/* Pattern count badge — shows how many patterns detected */
+.pattern-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: white;
+  background: #0055A4;
+  padding: 1px 4px;
+  border-radius: 4px;
+  min-width: 14px;
+  text-align: center;
+}
+
+/* AI sparkle — future days only */
+.ai-indicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+
+  .sparkle-icon {
+    font-size: 12px;
+    color: #f59e0b;
+    animation: sparkle 2s infinite;
+  }
+}
+
+.pattern-dots {
+  position: absolute;
+  bottom: 4px;
+  display: flex;
+  gap: 2px;
+
+  .pattern-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+  }
+}
+
+
 /* DNA Status Bar */
 .dna-status-bar {
-  background: linear-gradient(90deg, rgba(0,85,164,0.08), rgba(227,24,55,0.08));
+  background: linear-gradient(90deg, rgba(0, 85, 164, 0.08), rgba(227, 24, 55, 0.08));
   padding: 6px 16px;
   display: flex;
   justify-content: center;
@@ -330,140 +366,73 @@ ion-content.calendar-content {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
 }
 
-/* Calendar Grid - ensure future days are visible */
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  padding: 0 12px;
-  margin-bottom: 16px;
+.day-number {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  z-index: 1;
 }
 
-.calendar-day {
-  aspect-ratio: 1;
+.spending-ring {
+  position: absolute;
+  bottom: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22C55E;
+}
+
+.ai-indicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+
+  .sparkle-icon {
+    font-size: 12px;
+    color: #f59e0b;
+    animation: sparkle 2s infinite;
+  }
+}
+
+.pattern-dots {
+  position: absolute;
+  bottom: 4px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  position: relative;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: white;
-  min-height: 48px;
+  gap: 2px;
 
-  &:active {
-    transform: scale(0.95);
-  }
-
-  /* Today highlight */
-  &.today {
-    background: linear-gradient(135deg, #0055A4, #0078D4);
-    box-shadow: 0 4px 12px rgba(0,85,164,0.3);
-
-    .day-number {
-      color: white;
-      font-weight: 800;
-    }
-  }
-
-  /* Other month - slightly faded but still visible */
-  &.other-month {
-    opacity: 0.4;
-    background: #f8f9fa;
-
-    .day-number {
-      color: #8e8e93;
-    }
-  }
-
-  /* Future days with AI - make them stand out */
-  &.future-ai {
-    background: linear-gradient(135deg, #fefce8, #fef9c3);
-    border: 2px solid #fbbf24;
-    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.2);
-
-    .day-number {
-      color: #92400e;
-      font-weight: 700;
-    }
-
-    &:hover {
-      box-shadow: 0 4px 16px rgba(251, 191, 36, 0.4);
-      transform: translateY(-2px);
-    }
-  }
-
-  /* Has transactions */
-  &.has-transactions {
-    .day-number {
-      color: #0055A4;
-      font-weight: 700;
-    }
-  }
-
-  /* Spending indicators */
-  &.spending-high {
-    .spending-ring {
-      background: #E31837;
-    }
-  }
-
-  &.spending-medium {
-    .spending-ring {
-      background: #0078D4;
-    }
-  }
-
-  .day-number {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1a1a1a;
-    z-index: 1;
-  }
-
-  .spending-ring {
-    position: absolute;
-    bottom: 4px;
-    width: 6px;
-    height: 6px;
+  .pattern-dot {
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
-    background: #22C55E;
-  }
-
-  .ai-indicator {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-
-    .sparkle-icon {
-      font-size: 12px;
-      color: #f59e0b;
-      animation: sparkle 2s infinite;
-    }
-  }
-
-  .pattern-dots {
-    position: absolute;
-    bottom: 4px;
-    display: flex;
-    gap: 2px;
-
-    .pattern-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-    }
   }
 }
+
 
 @keyframes sparkle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.3); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.3);
+  }
 }
 
 /* Legend */
@@ -486,9 +455,17 @@ ion-content.calendar-content {
       height: 8px;
       border-radius: 50%;
 
-      &.spent { background: #22C55E; }
-      &.ai { background: #fbbf24; }
-      &.pattern { background: #0055A4; }
+      &.spent {
+        background: #22C55E;
+      }
+
+      &.ai {
+        background: #fbbf24;
+      }
+
+      &.pattern {
+        background: #0055A4;
+      }
     }
   }
 }
@@ -527,7 +504,7 @@ ion-content.calendar-content {
         font-size: 12px;
         font-weight: 700;
         color: #0055A4;
-        background: rgba(0,85,164,0.1);
+        background: rgba(0, 85, 164, 0.1);
         padding: 2px 8px;
         border-radius: 12px;
       }
@@ -597,7 +574,7 @@ ion-content.calendar-content {
     flex: 1;
     background: white;
     border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     overflow: hidden;
   }
 
@@ -619,12 +596,18 @@ ion-content.calendar-content {
 
     &.pattern {
       background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-      ion-icon { color: #22c55e; }
+
+      ion-icon {
+        color: #22c55e;
+      }
     }
 
     &.dna {
       background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-      ion-icon { color: #0055A4; }
+
+      ion-icon {
+        color: #0055A4;
+      }
     }
 
     ion-icon {
@@ -790,10 +773,19 @@ ion-content.calendar-content {
   }
 }
 
+.timeline-icon {
+  width: 44px; // was probably smaller
+  height: 44px;
+
+  ion-icon {
+    font-size: 24px; // increase from 20px
+  }
+}
+
 .txn-card {
   margin-bottom: 8px;
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
   .txn-card-content {
     display: flex;
@@ -803,8 +795,8 @@ ion-content.calendar-content {
   }
 
   .txn-icon-wrapper {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     border-radius: 12px;
     background: linear-gradient(135deg, #fee2e2, #fecaca);
     display: flex;
@@ -813,13 +805,16 @@ ion-content.calendar-content {
     flex-shrink: 0;
 
     ion-icon {
-      font-size: 20px;
+      font-size: 26px;
       color: #E31837;
     }
 
     &.income {
       background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-      ion-icon { color: #22C55E; }
+
+      ion-icon {
+        color: #22C55E;
+      }
     }
   }
 
@@ -851,6 +846,7 @@ ion-content.calendar-content {
     }
   }
 }
+
 /* Stats Modal */
 .stats-hero {
   display: flex;
@@ -926,77 +922,638 @@ ion-content.calendar-content {
       transition: width 0.6s ease;
     }
   }
+
   .alt-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #0055A4;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.alt-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-
-  &:last-child {
-    border-bottom: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0055A4;
+    text-transform: uppercase;
+    margin-bottom: 10px;
   }
 
-  .alt-photo {
-    width: 50px;
-    height: 50px;
-    border-radius: 10px;
-    overflow: hidden;
-    flex-shrink: 0;
+  .alt-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
 
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    &:last-child {
+      border-bottom: none;
     }
+
+    .alt-photo {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .alt-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+
+      .alt-desc {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a1a1a;
+      }
+
+      .alt-meta {
+        font-size: 12px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        ion-icon {
+          font-size: 12px;
+        }
+      }
+
+      .alt-reason {
+        font-size: 11px;
+        color: #22c55e;
+        font-weight: 500;
+      }
+    }
+
+    .alt-cost {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0055A4;
+    }
+  }
+
+  /* ── Planned card styling ── */
+  .planned-card {
+    border-left: 3px dashed var(--ion-color-tertiary);
+    background: rgba(var(--ion-color-tertiary-rgb), 0.04);
+  }
+
+  .planned-icon {
+    background: rgba(var(--ion-color-tertiary-rgb), 0.15) !important;
+    color: var(--ion-color-tertiary) !important;
+  }
+
+  .planned-amount {
+    color: var(--ion-color-medium);
+    font-weight: 600;
+  }
+
+  .txn-type-badge {
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 4px;
+    height: 18px;
+  }
+
+  /* ── Section headers ── */
+  .section-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin: 20px 0 10px 0;
+    padding-left: 4px;
+
+    &.real-subtitle {
+      color: var(--ion-color-success);
+      border-left: 3px solid var(--ion-color-success);
+      padding-left: 10px;
+    }
+
+    &.planned-subtitle {
+      color: var(--ion-color-tertiary);
+      border-left: 3px dashed var(--ion-color-tertiary);
+      padding-left: 10px;
+    }
+  }
+
+  /* ── Real transaction card ── */
+  .real-card {
+    border-left: 4px solid var(--ion-color-danger);
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    .real-icon {
+      background: rgba(var(--ion-color-danger-rgb), 0.12);
+      color: var(--ion-color-danger);
+    }
+
+    .real-amount {
+      color: var(--ion-color-danger);
+      font-weight: 800;
+      font-size: 16px;
+    }
+  }
+
+  /* ── Planned transaction card ── */
+  .planned-card {
+    border-left: 4px dashed var(--ion-color-tertiary);
+    background: rgba(var(--ion-color-tertiary-rgb), 0.04);
+    opacity: 0.85;
+
+    .planned-icon {
+      background: rgba(var(--ion-color-tertiary-rgb), 0.15);
+      color: var(--ion-color-tertiary);
+    }
+
+    .planned-amount {
+      color: var(--ion-color-medium);
+      font-weight: 600;
+      font-size: 15px;
+
+      &::before {
+        content: 'est. ';
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--ion-color-medium);
+        margin-right: 2px;
+      }
+    }
+  }
+
+  /* ── Common badge styling ── */
+  .txn-type-badge {
+    font-size: 10px;
+    font-weight: 800;
+    height: 20px;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* VIBRANT ALTERNATING TIMELINE                               */
+/* ═══════════════════════════════════════════════════════════ */
+
+.timeline-content {
+  --background: #f0f2f5;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.timeline-wrapper {
+  position: relative;
+  padding: 40px 0;
+  min-height: 300px;
+}
+
+/* Central gradient spine */
+.spine {
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  bottom: 20px;
+  width: 4px;
+  background: linear-gradient(180deg, 
+    #3b82f6 0%,    /* blue */
+    #ef4444 33%,   /* red */
+    #f59e0b 66%,   /* amber */
+    #10b981 100%   /* green */
+  );
+  transform: translateX(-50%);
+  border-radius: 2px;
+  opacity: 0.35;
+}
+
+/* Each row */
+.timeline-item {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 32px;
+
+  /* LEFT side (even index) */
+  &.left {
+    flex-direction: row;
+    padding-right: 50%;
+    padding-left: 16px;
+
+    .time-bubble {
+      order: 2;
+      margin-left: 16px;
+    }
+
+    .spine-dot {
+      order: 1;
+      margin-left: auto;
+      margin-right: -6px;
+    }
+
+    .content-card {
+      order: 0;
+      margin-right: 20px;
+      text-align: right;
+
+      .card-inner {
+        flex-direction: row-reverse;
+      }
+
+      .card-body {
+        align-items: flex-end;
+      }
+
+      .card-top {
+        flex-direction: row-reverse;
+      }
+
+      .card-tags {
+        justify-content: flex-end;
+      }
+
+      .tap-hint {
+        justify-content: flex-end;
+      }
+    }
+  }
+
+  /* RIGHT side (odd index) */
+  &.right {
+    flex-direction: row;
+    padding-left: 50%;
+    padding-right: 16px;
+
+    .time-bubble {
+      order: 0;
+      margin-right: 16px;
+    }
+
+    .spine-dot {
+      order: 1;
+      margin-left: -6px;
+    }
+
+    .content-card {
+      order: 2;
+      margin-left: 20px;
+      text-align: left;
+
+      .card-inner {
+        flex-direction: row;
+      }
+
+      .card-body {
+        align-items: flex-start;
+      }
+    }
+  }
+}
+
+/* Time bubble (like 2012, 2013 in reference) */
+.time-bubble {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ion-color-medium);
+  min-width: 50px;
+  text-align: center;
+  padding-top: 8px;
+  flex-shrink: 0;
+}
+
+/* Spine dot */
+.spine-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid;
+  flex-shrink: 0;
+  margin-top: 12px;
+  z-index: 2;
+}
+
+.timeline-item.planned .spine-dot { border-color: #3b82f6; }
+.timeline-item.paid .spine-dot { border-color: #ef4444; }
+.timeline-item.predicted .spine-dot { border-color: #f59e0b; }
+.timeline-item.income .spine-dot { border-color: #10b981; }
+
+/* Content card */
+.content-card {
+  flex: 1;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-top: 3px solid;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.timeline-item.planned .content-card { border-top-color: #3b82f6; }
+.timeline-item.paid .content-card { border-top-color: #ef4444; }
+.timeline-item.predicted .content-card { border-top-color: #f59e0b; }
+.timeline-item.income .content-card { border-top-color: #10b981; }
+
+.card-inner {
+  display: flex;
+  gap: 12px;
+}
+
+/* Icon circle */
+.icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 20px;
+}
+
+.timeline-item.planned .icon-circle { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.timeline-item.paid .icon-circle { background: rgba(239,68,68,0.12); color: #ef4444; }
+.timeline-item.predicted .icon-circle { background: rgba(245,158,11,0.12); color: #f59e0b; }
+.timeline-item.income .icon-circle { background: rgba(16,185,129,0.12); color: #10b981; }
+
+.card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.card-amount {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ef4444;
+  white-space: nowrap;
+
+  &.est {
+    color: #6b7280;
+    font-weight: 600;
+  }
+}
+
+.card-location {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0 0 8px 0;
+}
+
+/* Tags */
+.card-tags {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+
+  .tag {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    color: white;
+
+    &.planned { background: #3b82f6; }
+    &.paid { background: #ef4444; }
+    &.predicted { background: #f59e0b; color: #1f2937; }
+    &.income { background: #10b981; }
+  }
+}
+
+/* Tap hint */
+.tap-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+
+  ion-icon {
+    font-size: 12px;
+  }
+}
+
+/* Expanded content */
+.expanded-content {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  animation: slideDown 0.25s ease;
+  text-align: left !important;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.alt-section, .detail-section {
+  h4 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #374151;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    ion-icon {
+      font-size: 14px;
+    }
+  }
+}
+
+.alt-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #f9fafb;
+  border-radius: 12px;
+  margin-bottom: 8px;
+
+  .alt-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
   }
 
   .alt-info {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+    min-width: 0;
 
-    .alt-desc {
-      font-size: 14px;
-      font-weight: 700;
-      color: #1a1a1a;
+    strong {
+      font-size: 13px;
+      color: #111827;
+      display: block;
     }
 
-    .alt-meta {
-      font-size: 12px;
-      color: #666;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-
-      ion-icon {
-        font-size: 12px;
-      }
-    }
-
-    .alt-reason {
+    span {
       font-size: 11px;
-      color: #22c55e;
-      font-weight: 500;
+      color: #6b7280;
+      display: block;
+      margin-top: 2px;
+    }
+
+    p {
+      font-size: 11px;
+      color: #3b82f6;
+      margin: 4px 0 0 0;
     }
   }
 
-  .alt-cost {
+  .alt-price {
     font-size: 14px;
     font-weight: 700;
-    color: #0055A4;
+    color: #3b82f6;
+    flex-shrink: 0;
   }
 }
+
+.detail-grid {
+  display: grid;
+  gap: 8px;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+
+    &:last-child { border-bottom: none; }
+
+    label {
+      font-size: 12px;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    span {
+      font-size: 13px;
+      color: #111827;
+      font-weight: 600;
+    }
+  }
+}
+
+.reason-text {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.confidence-track {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.confidence-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #10b981);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.confidence-text {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 6px;
+  display: block;
+}
+
+/* Day footer */
+.day-footer {
+  margin: 24px 16px 0;
+  padding: 20px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 14px;
+  color: #6b7280;
+
+  &.total {
+    font-size: 16px;
+    font-weight: 800;
+    color: #111827;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 2px solid #f3f4f6;
+  }
+
+  .value {
+    font-weight: 700;
+  }
+}
+
+.planned-label { color: #3b82f6; }
+.paid-label { color: #ef4444; }
+
+.footer-divider {
+  height: 1px;
+  background: #f3f4f6;
+  margin: 4px 0;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #9ca3af;
+
+  ion-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 15px;
+  }
 }

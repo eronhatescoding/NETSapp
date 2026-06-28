@@ -17,108 +17,10 @@ import { DEMO_USER_ID } from './seed.service';
 @Injectable({ providedIn: 'root' })
 export class UserDnaService {
 
-  // ─────────────────────────────────────────────────────────────
-  // 69 HARDCODED TRANSACTIONS (June 1–17, 2026) with weather data
-  // ─────────────────────────────────────────────────────────────
-  private transactions: Transaction[] = [
-    // ── WEEK 1: June 1–7 ────────────────────────────────────────
-    // Monday June 1
-    { id: 't001', date: '2026-06-01', time: '08:30', amount: 2.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Iced Latte', merchant: 'Starbucks', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't002', date: '2026-06-01', time: '12:15', amount: 5.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Chicken Rice', merchant: 'Kopitiam', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't003', date: '2026-06-01', time: '18:45', amount: 12.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Ramen Set', merchant: 'Ippudo', location: 'Star Vista', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't004', date: '2026-06-01', time: '19:30', amount: 15.90, type: 'debit', category: 'Entertainment', subcategory: 'Streaming', description: 'Netflix Subscription', merchant: 'Netflix', location: 'Online', paymentMethod: 'Credit Card', weatherCondition: 'cloudy' },
-    // Tuesday June 2
-    { id: 't005', date: '2026-06-02', time: '08:35', amount: 2.20, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Kopi-O Kosong', merchant: 'Toast Box', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't006', date: '2026-06-02', time: '12:00', amount: 6.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Nasi Lemak', merchant: 'Punggol Nasi Lemak', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't007', date: '2026-06-02', time: '14:00', amount: 2.00, type: 'debit', category: 'Fitness', subcategory: 'Gym', description: 'Gym Entry', merchant: 'ActiveSG Gym', location: 'Clementi Stadium', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't008', date: '2026-06-02', time: '19:00', amount: 8.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Fishball Noodles', merchant: 'Ah Hock', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    // Wednesday June 3
-    { id: 't009', date: '2026-06-03', time: '08:25', amount: 2.80, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Cappuccino', merchant: 'PPP Coffee', location: 'Star Vista', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    { id: 't010', date: '2026-06-03', time: '12:30', amount: 4.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Ban Mian', merchant: 'Qiu Lian', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    { id: 't011', date: '2026-06-03', time: '15:00', amount: 45.00, type: 'debit', category: 'Shopping', subcategory: 'Clothing', description: 'Uniqlo T-Shirts x3', merchant: 'Uniqlo', location: 'Jurong East', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    { id: 't012', date: '2026-06-03', time: '19:30', amount: 22.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Korean BBQ Set', merchant: 'Seoul Yummy', location: 'JEM', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    // Thursday June 4
-    { id: 't013', date: '2026-06-04', time: '08:40', amount: 2.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Iced Americano', merchant: 'Huggs Coffee', location: 'Clementi MRT', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't014', date: '2026-06-04', time: '12:15', amount: 5.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Chicken Rice', merchant: 'Kopitiam', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't015', date: '2026-06-04', time: '14:00', amount: 2.00, type: 'debit', category: 'Fitness', subcategory: 'Gym', description: 'Gym Entry', merchant: 'ActiveSG Gym', location: 'Clementi Stadium', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't016', date: '2026-06-04', time: '19:00', amount: 7.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Pasta Aglio Olio', merchant: 'Saizeriya', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    // Friday June 5
-    { id: 't017', date: '2026-06-05', time: '08:30', amount: 2.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Iced Latte', merchant: 'Starbucks', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't018', date: '2026-06-05', time: '12:00', amount: 6.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Bak Kut Teh', merchant: 'Song Fa', location: 'West Coast', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't019', date: '2026-06-05', time: '16:00', amount: 8.00, type: 'debit', category: 'Education', subcategory: 'Stationery', description: 'Muji Notebooks x2', merchant: 'Muji', location: 'JEM', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't020', date: '2026-06-05', time: '20:00', amount: 14.00, type: 'debit', category: 'Entertainment', subcategory: 'Movies', description: 'Movie Ticket', merchant: 'GV', location: 'Jurong Point', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    // Saturday June 6
-    { id: 't021', date: '2026-06-06', time: '09:00', amount: 3.20, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Flat White', merchant: 'Nylon Coffee', location: 'Everton Park', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't022', date: '2026-06-06', time: '10:30', amount: 4.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Breakfast', description: 'Kaya Toast Set', merchant: 'Killiney', location: 'Holland V', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't023', date: '2026-06-06', time: '13:00', amount: 35.00, type: 'debit', category: 'Shopping', subcategory: 'Groceries', description: 'NTUC Weekly Groceries', merchant: 'NTUC FairPrice', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't024', date: '2026-06-06', time: '15:00', amount: 18.00, type: 'debit', category: 'Entertainment', subcategory: 'Bowling', description: 'Bowling 2 Games', merchant: 'K Bowling', location: 'Orchard Central', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't025', date: '2026-06-06', time: '19:30', amount: 28.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Hotpot Buffet', merchant: 'Haidilao', location: 'JEM', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    // Sunday June 7
-    { id: 't026', date: '2026-06-07', time: '10:00', amount: 3.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Cold Brew', merchant: 'PPP Coffee', location: 'Star Vista', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't027', date: '2026-06-07', time: '11:00', amount: 12.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Brunch', description: 'Eggs Benedict', merchant: 'Wild Honey', location: 'Mandarin Gallery', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't028', date: '2026-06-07', time: '14:00', amount: 0.00, type: 'debit', category: 'Entertainment', subcategory: 'Park', description: 'Botanic Gardens Walk', merchant: 'NParks', location: 'Botanic Gardens', paymentMethod: 'Free', weatherCondition: 'sunny' },
-    { id: 't029', date: '2026-06-07', time: '18:00', amount: 16.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Pizza', merchant: 'Peperoni', location: 'Greenwood', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
+  // Start empty — all data comes from Firestore (seeded or live)
+  private transactions: Transaction[] = [];
 
-    // ── WEEK 2: June 8–14 ───────────────────────────────────────
-    // Monday June 8
-    { id: 't030', date: '2026-06-08', time: '08:30', amount: 2.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Iced Latte', merchant: 'Starbucks', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    { id: 't031', date: '2026-06-08', time: '12:15', amount: 5.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Chicken Rice', merchant: 'Kopitiam', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    { id: 't032', date: '2026-06-08', time: '18:30', amount: 11.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Ramen', merchant: 'Marutama', location: 'The Cathay', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    { id: 't033', date: '2026-06-08', time: '20:00', amount: 500.00, type: 'credit', category: 'Income', subcategory: 'Allowance', description: 'Monthly Allowance', merchant: 'Parents', location: 'Bank Transfer', paymentMethod: 'Bank Transfer', weatherCondition: 'rainy' },
-    // Tuesday June 9
-    { id: 't034', date: '2026-06-09', time: '08:35', amount: 2.20, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Kopi-O Kosong', merchant: 'Toast Box', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't035', date: '2026-06-09', time: '12:00', amount: 6.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Nasi Lemak', merchant: 'Punggol Nasi Lemak', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't036', date: '2026-06-09', time: '14:00', amount: 2.00, type: 'debit', category: 'Fitness', subcategory: 'Gym', description: 'Gym Entry', merchant: 'ActiveSG Gym', location: 'Clementi Stadium', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't037', date: '2026-06-09', time: '19:00', amount: 8.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Fishball Noodles', merchant: 'Ah Hock', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    // Wednesday June 10
-    { id: 't038', date: '2026-06-10', time: '08:25', amount: 2.80, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Cappuccino', merchant: 'PPP Coffee', location: 'Star Vista', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't039', date: '2026-06-10', time: '12:30', amount: 4.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Ban Mian', merchant: 'Qiu Lian', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't040', date: '2026-06-10', time: '15:00', amount: 28.00, type: 'debit', category: 'Shopping', subcategory: 'Skincare', description: 'Innisfree Toner', merchant: 'Innisfree', location: 'Westgate', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't041', date: '2026-06-10', time: '19:30', amount: 20.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Sushi Set', merchant: 'Sushi Tei', location: 'JEM', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    // Thursday June 11
-    { id: 't042', date: '2026-06-11', time: '08:40', amount: 2.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Iced Americano', merchant: 'Huggs Coffee', location: 'Clementi MRT', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't043', date: '2026-06-11', time: '12:15', amount: 5.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Chicken Rice', merchant: 'Kopitiam', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't044', date: '2026-06-11', time: '14:00', amount: 2.00, type: 'debit', category: 'Fitness', subcategory: 'Gym', description: 'Gym Entry', merchant: 'ActiveSG Gym', location: 'Clementi Stadium', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't045', date: '2026-06-11', time: '19:00', amount: 7.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Pasta Aglio Olio', merchant: 'Saizeriya', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    // Friday June 12
-    { id: 't046', date: '2026-06-12', time: '08:30', amount: 2.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Iced Latte', merchant: 'Starbucks', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't047', date: '2026-06-12', time: '12:00', amount: 6.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Bak Kut Teh', merchant: 'Song Fa', location: 'West Coast', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't048', date: '2026-06-12', time: '16:00', amount: 12.00, type: 'debit', category: 'Education', subcategory: 'Books', description: 'Python Textbook', merchant: 'Kinokuniya', location: 'Takashimaya', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't049', date: '2026-06-12', time: '20:00', amount: 350.00, type: 'credit', category: 'Income', subcategory: 'Part-time', description: 'Tutoring Pay', merchant: 'Student', location: 'Bank Transfer', paymentMethod: 'Bank Transfer', weatherCondition: 'cloudy' },
-    // Saturday June 13
-    { id: 't050', date: '2026-06-13', time: '09:00', amount: 3.20, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Flat White', merchant: 'Nylon Coffee', location: 'Everton Park', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't051', date: '2026-06-13', time: '10:30', amount: 4.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Breakfast', description: 'Kaya Toast Set', merchant: 'Killiney', location: 'Holland V', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't052', date: '2026-06-13', time: '13:00', amount: 42.00, type: 'debit', category: 'Shopping', subcategory: 'Groceries', description: 'NTUC Weekly Groceries', merchant: 'NTUC FairPrice', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't053', date: '2026-06-13', time: '15:00', amount: 22.00, type: 'debit', category: 'Entertainment', subcategory: 'Escape Room', description: 'Escape Room Entry', merchant: 'Trapped', location: 'Bugis', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't054', date: '2026-06-13', time: '19:30', amount: 25.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'K-BBQ Buffet', merchant: 'Seoul Garden', location: 'Jurong Point', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    // Sunday June 14
-    { id: 't055', date: '2026-06-14', time: '10:00', amount: 3.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Cold Brew', merchant: 'PPP Coffee', location: 'Star Vista', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    { id: 't056', date: '2026-06-14', time: '11:00', amount: 14.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Brunch', description: 'Avocado Toast', merchant: 'Group Therapy', location: 'Duxton', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    { id: 't057', date: '2026-06-14', time: '14:00', amount: 18.00, type: 'debit', category: 'Entertainment', subcategory: 'Museum', description: 'ArtScience Museum', merchant: 'Marina Bay Sands', location: 'MBS', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-    { id: 't058', date: '2026-06-14', time: '18:00', amount: 15.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Burger', merchant: 'Shake Shack', location: 'Jewel', paymentMethod: 'NETS Pay', weatherCondition: 'rainy' },
-
-    // ── WEEK 3: June 15–17 (partial, up to today) ───────────────
-    // Monday June 15
-    { id: 't059', date: '2026-06-15', time: '08:30', amount: 2.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Iced Latte', merchant: 'Starbucks', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't060', date: '2026-06-15', time: '12:15', amount: 5.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Chicken Rice', merchant: 'Kopitiam', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    { id: 't061', date: '2026-06-15', time: '18:45', amount: 12.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Ramen Set', merchant: 'Ippudo', location: 'Star Vista', paymentMethod: 'NETS Pay', weatherCondition: 'cloudy' },
-    // Tuesday June 16
-    { id: 't062', date: '2026-06-16', time: '08:35', amount: 2.20, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Kopi-O Kosong', merchant: 'Toast Box', location: 'Clementi Mall', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't063', date: '2026-06-16', time: '12:00', amount: 6.00, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Nasi Lemak', merchant: 'Punggol Nasi Lemak', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't064', date: '2026-06-16', time: '14:00', amount: 2.00, type: 'debit', category: 'Fitness', subcategory: 'Gym', description: 'Gym Entry', merchant: 'ActiveSG Gym', location: 'Clementi Stadium', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't065', date: '2026-06-16', time: '19:00', amount: 8.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Dinner', description: 'Fishball Noodles', merchant: 'Ah Hock', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    // Wednesday June 17 (TODAY)
-    { id: 't066', date: '2026-06-17', time: '08:25', amount: 2.80, type: 'debit', category: 'Food & Beverage', subcategory: 'Coffee', description: 'Cappuccino', merchant: 'PPP Coffee', location: 'Star Vista', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't067', date: '2026-06-17', time: '12:30', amount: 4.50, type: 'debit', category: 'Food & Beverage', subcategory: 'Lunch', description: 'Ban Mian', merchant: 'Qiu Lian', location: 'Clementi 448', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't068', date: '2026-06-17', time: '15:00', amount: 32.00, type: 'debit', category: 'Shopping', subcategory: 'Clothing', description: 'Cotton On Tee & Shorts', merchant: 'Cotton On', location: 'Jurong East', paymentMethod: 'NETS Pay', weatherCondition: 'sunny' },
-    { id: 't069', date: '2026-06-17', time: '19:30', amount: 200.00, type: 'credit', category: 'Income', subcategory: 'Scholarship', description: 'MOE Scholarship', merchant: 'MOE', location: 'Bank Transfer', paymentMethod: 'Bank Transfer', weatherCondition: 'sunny' },
-  ];
-
-  // ─────────────────────────────────────────────────────────────
-  // REACTIVE DNA ENGINE (Calvin) — Eron's sync methods below
-  // ─────────────────────────────────────────────────────────────
-
-  private txnSubject = new BehaviorSubject<Transaction[]>(this.transactions);
+  private txnSubject = new BehaviorSubject<Transaction[]>([]);
 
   /** Reactive stream of all transactions — updates after addTransaction() or Firestore sync */
   readonly transactions$ = this.txnSubject.asObservable();
@@ -133,34 +35,84 @@ export class UserDnaService {
     this.syncFromFirestore();
   }
 
-  /** Listen to Firestore; switch to seeded data when available */
+  /** Listen to Firestore; merge new docs without wiping existing data */
   private syncFromFirestore(): void {
     const q = query(
       collection(this.firestore, 'transactions'),
       where('userId', '==', DEMO_USER_ID)
     );
+
     onSnapshot(q,
       snapshot => {
-        const firestoreTxns = snapshot.docs.map(d => d.data() as Transaction);
-        if (firestoreTxns.length > 0) {
-          const sorted = [...firestoreTxns].sort(
+        const firestoreTxns = snapshot.docs.map(d => ({ ...d.data(), id: d.id }) as Transaction);
+        const existingIds = new Set(this.transactions.map(t => t.id));
+
+        // Only append NEW Firestore docs — never wipe seed data
+        const newTxns = firestoreTxns.filter(t => !existingIds.has(t.id));
+
+        if (newTxns.length > 0) {
+          this.transactions = [...this.transactions, ...newTxns].sort(
             (a, b) => (a.date + a.time).localeCompare(b.date + b.time)
           );
-          this.transactions = sorted;
-          this.txnSubject.next(sorted);
+          this.txnSubject.next([...this.transactions]);
+          console.log(`[DNA] Merged ${newTxns.length} Firestore txns. Total: ${this.transactions.length}`);
+        } else if (this.transactions.length === 0 && firestoreTxns.length > 0) {
+          // First load: Firestore has data but local is empty
+          this.transactions = [...firestoreTxns].sort(
+            (a, b) => (a.date + a.time).localeCompare(b.date + b.time)
+          );
+          this.txnSubject.next([...this.transactions]);
+          console.log(`[DNA] Loaded ${firestoreTxns.length} txns from Firestore.`);
+        } else if (this.transactions.length === 0) {
+          console.log('[DNA] No transactions in Firestore yet — waiting for seed...');
         }
       },
       err => {
-        console.warn('[UserDnaService] Firestore read error — using hardcoded transactions:', err?.message ?? err);
+        console.warn('[UserDnaService] Firestore read error:', err?.message ?? err);
       }
     );
   }
 
-    async addTransaction(partial: Omit<Transaction, 'id'>): Promise<string> {
+  async addTransaction(partial: Omit<Transaction, 'id'>): Promise<string> {
     const ref = doc(collection(this.firestore, 'transactions'));
     const txn: Transaction = { ...partial, id: ref.id };
 
     // Optimistic update: add to local state immediately
+    this.transactions.push(txn);
+    this.transactions.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    this.txnSubject.next([...this.transactions]);
+
+    try {
+      await setDoc(ref, txn);
+    } catch (err) {
+      console.warn('[UserDnaService] Firestore write failed — keeping local transaction:', err);
+    }
+    return ref.id;
+  }
+
+  async addExternalTransaction(partial: any): Promise<string> {
+    const ref = doc(collection(this.firestore, 'transactions'));
+    const txn: Transaction = {
+      ...partial,
+      id: ref.id,
+      userId: DEMO_USER_ID,
+      date: partial.date || new Date().toISOString().split('T')[0],
+      time: partial.time || '12:00',
+      amount: partial.amount || 0,
+      type: partial.type || 'debit',
+      category: partial.category || 'Entertainment',
+      subcategory: partial.subcategory || 'General',
+      description: partial.description || 'External activity',
+      merchant: partial.merchant || 'Unknown',
+      location: partial.location || 'Singapore',
+      paymentMethod: partial.paymentMethod || 'NETS Pay',
+      weatherCondition: partial.weatherCondition || 'sunny',
+      tags: partial.tags || [],
+      merchantId: partial.merchantId || null,
+      isPlanned: partial.isPlanned || false,   // ← ADD THIS
+    };
+
+    // Optimistic update
     this.transactions.push(txn);
     this.transactions.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     this.txnSubject.next([...this.transactions]);
@@ -180,22 +132,12 @@ export class UserDnaService {
 
   /**
    * Compute full UserDNA from current in-memory transactions.
-   *
-   * Affinity weight formula (documented here for Eron's reference):
-   *   rawScore = 0.5 * freqShare + 0.3 * recencyScore + 0.2 * spendShare
-   *   weight   = rawScore / max(rawScore)          ← normalised to 0..1
-   *
-   * Where:
-   *   freqShare     = tag.count / totalTagOccurrences
-   *   recencyScore  = e^(-0.05 * daysSinceLastSeen)   (half-life ≈ 14 days)
-   *   spendShare    = tag.totalSpend / totalTagSpend
    */
   computeUserDNA(): UserDNA {
-    const all    = this.txnSubject.getValue();
-    const debits = all.filter(t => t.type === 'debit' && t.amount > 0);
+    const all = this.txnSubject.getValue();
+    const debits = all.filter(t => t.type === 'debit' && t.amount > 0 && !t.isPlanned);   // ← exclude planned
     const credits = all.filter(t => t.type === 'credit');
-
-    const totalSpent  = debits.reduce((s, t) => s + t.amount, 0);
+    const totalSpent = debits.reduce((s, t) => s + t.amount, 0);
     const totalIncome = credits.reduce((s, t) => s + t.amount, 0);
 
     // Category breakdown
@@ -243,11 +185,11 @@ export class UserDnaService {
 
     const rawScores = new Map<string, number>();
     tagMap.forEach((v, tag) => {
-      const freqShare    = totalTagCount > 0 ? v.count / totalTagCount : 0;
-      const daysSince    = Math.max(0,
+      const freqShare = totalTagCount > 0 ? v.count / totalTagCount : 0;
+      const daysSince = Math.max(0,
         (new Date(today).getTime() - new Date(v.lastSeen).getTime()) / 86_400_000);
       const recencyScore = Math.exp(-0.05 * daysSince);
-      const spendShare   = totalTagSpend > 0 ? v.spend / totalTagSpend : 0;
+      const spendShare = totalTagSpend > 0 ? v.spend / totalTagSpend : 0;
       rawScores.set(tag, 0.5 * freqShare + 0.3 * recencyScore + 0.2 * spendShare);
     });
 
@@ -256,10 +198,10 @@ export class UserDnaService {
     tagMap.forEach((v, tag) => {
       affinityVector.push({
         tag,
-        weight:     maxRaw > 0 ? Math.round((rawScores.get(tag)! / maxRaw) * 1000) / 1000 : 0,
-        count:      v.count,
+        weight: maxRaw > 0 ? Math.round((rawScores.get(tag)! / maxRaw) * 1000) / 1000 : 0,
+        count: v.count,
         totalSpend: Math.round(v.spend * 100) / 100,
-        lastSeen:   v.lastSeen,
+        lastSeen: v.lastSeen,
       });
     });
     affinityVector.sort((a, b) => b.weight - a.weight);
@@ -270,8 +212,8 @@ export class UserDnaService {
       userId: DEMO_USER_ID,
       generatedAt: new Date().toISOString(),
       totals: {
-        spent:    Math.round(totalSpent  * 100) / 100,
-        income:   Math.round(totalIncome * 100) / 100,
+        spent: Math.round(totalSpent * 100) / 100,
+        income: Math.round(totalIncome * 100) / 100,
         txnCount: all.length,
       },
       categoryBreakdown,
@@ -295,8 +237,6 @@ export class UserDnaService {
 
   /**
    * JSON export for Eron's recommendation engine.
-   * Contains affinityVector + merchant tag catalogue.
-   * No similarity scores or location logic — that's Eron's side.
    */
   exportDnaJson(): string {
     const dna = this.computeUserDNA();
@@ -330,6 +270,7 @@ export class UserDnaService {
   /** Detect spending patterns from transaction history */
   detectPatterns(): SpendingPattern[] {
     const patterns: SpendingPattern[] = [];
+    const realTxns = this.transactions.filter(t => !t.isPlanned);
     const byCategory = this.groupBy(this.transactions, 'category');
 
     for (const [cat, txs] of Object.entries(byCategory)) {
@@ -421,7 +362,7 @@ export class UserDnaService {
   getWeeklyPattern(dayOfWeek: number): WeeklyPattern {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const dayTxs = this.transactions.filter(t => {
-      return new Date(t.date + 'T00:00:00').getDay() === dayOfWeek;
+      return new Date(t.date + 'T00:00:00').getDay() === dayOfWeek && !t.isPlanned;   // ← exclude planned
     });
 
     const bySub = this.groupBy(dayTxs.filter(t => t.type === 'debit'), 'subcategory');
@@ -448,27 +389,25 @@ export class UserDnaService {
     };
   }
 
-  /** Compare same weekday across weeks */
   getSameDayComparison(targetDate: string): { sameDayLastWeek: string; avgSpent: number; trend: 'up' | 'down' | 'stable' } {
     const target = new Date(targetDate + 'T00:00:00');
     const dow = target.getDay();
     const sameDayTxs = this.transactions.filter(t => {
       const d = new Date(t.date + 'T00:00:00');
-      return d.getDay() === dow && t.date !== targetDate && t.type === 'debit';
+      return d.getDay() === dow && t.date !== targetDate && t.type === 'debit' && !t.isPlanned;   // ← exclude planned
     });
 
     const avgSpent = sameDayTxs.length > 0
       ? sameDayTxs.reduce((a, t) => a + t.amount, 0) / sameDayTxs.length
       : 0;
 
-    // Find last occurrence of same weekday
     const lastWeek = new Date(target);
     lastWeek.setDate(lastWeek.getDate() - 7);
     const lastWeekStr = lastWeek.toISOString().split('T')[0];
-    const lastWeekTxs = this.transactions.filter(t => t.date === lastWeekStr && t.type === 'debit');
+    const lastWeekTxs = this.transactions.filter(t => t.date === lastWeekStr && t.type === 'debit' && !t.isPlanned);   // ← exclude planned
     const lastWeekTotal = lastWeekTxs.reduce((a, t) => a + t.amount, 0);
 
-    const targetTxs = this.transactions.filter(t => t.date === targetDate && t.type === 'debit');
+    const targetTxs = this.transactions.filter(t => t.date === targetDate && t.type === 'debit' && !t.isPlanned);   // ← exclude planned
     const targetTotal = targetTxs.reduce((a, t) => a + t.amount, 0);
 
     let trend: 'up' | 'down' | 'stable' = 'stable';
@@ -483,19 +422,19 @@ export class UserDnaService {
   }
 
   getMonthStats() {
-    const debits = this.transactions.filter(t => t.type === 'debit');
+    const debits = this.transactions.filter(t => t.type === 'debit' && !t.isPlanned);   // ← exclude planned
     const credits = this.transactions.filter(t => t.type === 'credit');
     return {
       totalSpent: debits.reduce((a, t) => a + t.amount, 0),
       totalIncome: credits.reduce((a, t) => a + t.amount, 0),
-      transactionCount: this.transactions.length,
+      transactionCount: this.transactions.filter(t => !t.isPlanned).length,   // ← count only real
       avgTransaction: debits.length > 0 ? debits.reduce((a, t) => a + t.amount, 0) / debits.length : 0
     };
   }
 
   getCategoryBreakdown() {
     const map = new Map<string, number>();
-    this.transactions.filter(t => t.type === 'debit').forEach(t => {
+    this.transactions.filter(t => t.type === 'debit' && !t.isPlanned).forEach(t => {   // ← exclude planned
       map.set(t.category, (map.get(t.category) || 0) + t.amount);
     });
     return Array.from(map.entries()).map(([name, amount]) => ({ name, amount })).sort((a, b) => b.amount - a.amount);
@@ -515,27 +454,5 @@ export class UserDnaService {
     const counts = new Map<string, number>();
     arr.forEach(v => counts.set(v, (counts.get(v) || 0) + 1));
     return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ?? arr[0];
-  }
-    addExternalTransaction(partial: any): void {
-    const txn: Transaction = {
-      id: `ext-${Date.now()}`,
-      date: partial.date || new Date().toISOString().split('T')[0],
-      time: partial.time || '12:00',
-      amount: partial.amount || 0,
-      type: partial.type || 'debit',
-      category: partial.category || 'Entertainment',
-      subcategory: partial.subcategory || 'General',
-      description: partial.description || 'External activity',
-      merchant: partial.merchant || 'Unknown',
-      location: partial.location || 'Singapore',
-      paymentMethod: partial.paymentMethod || 'NETS Pay',
-      weatherCondition: partial.weatherCondition || 'sunny',
-      tags: partial.tags || [],
-      merchantId: partial.merchantId || null
-    };
-
-    this.transactions.push(txn);
-    this.transactions.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-    this.txnSubject.next([...this.transactions]);
   }
 }

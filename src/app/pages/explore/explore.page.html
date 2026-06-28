@@ -13,28 +13,18 @@
 
   <!-- Search Bar -->
   <div class="search-wrap">
-    <ion-searchbar
-      [(ngModel)]="searchText"
-      (ionChange)="onSearchChange()"
-      placeholder="Search events & activities..."
-      animated="true"
-      class="explore-search">
+    <ion-searchbar [(ngModel)]="searchText" (ionChange)="onSearchChange()" placeholder="Search events & activities..."
+      animated="true" class="explore-search">
     </ion-searchbar>
   </div>
 
   <!-- Tab Switcher -->
   <div class="tab-switcher">
-    <button
-      class="tab-btn"
-      [class.active]="activeTab === 'events'"
-      (click)="activeTab = 'events'">
+    <button class="tab-btn" [class.active]="activeTab === 'events'" (click)="activeTab = 'events'">
       <ion-icon name="ticket-outline"></ion-icon>
       Events
     </button>
-    <button
-      class="tab-btn"
-      [class.active]="activeTab === 'activities'"
-      (click)="activeTab = 'activities'">
+    <button class="tab-btn" [class.active]="activeTab === 'activities'" (click)="activeTab = 'activities'">
       <ion-icon name="compass-outline"></ion-icon>
       Activities
     </button>
@@ -54,7 +44,8 @@
     <!-- Hero Featured Event -->
     <ng-container *ngIf="filteredEvents$ | async as events">
       <div class="hero-card" *ngIf="events[0]" (click)="openEvent(events[0])">
-        <div class="hero-image" [style.background-image]="'url(' + (events[0].imageUrl || 'assets/event-default.jpg') + ')'">
+        <div class="hero-image"
+          [style.background-image]="'url(' + (events[0].imageUrl || 'assets/event-default.jpg') + ')'">
           <div class="hero-overlay">
             <div class="hero-badge">
               <ion-icon name="flame-outline"></ion-icon>
@@ -69,6 +60,7 @@
           <div class="hero-footer">
             <span class="hero-price" *ngIf="events[0].price > 0">From ${{ events[0].price }}</span>
             <span class="hero-price free" *ngIf="events[0].price === 0">Free</span>
+            <span class="hero-price" *ngIf="events[0].price === -1">Price TBA</span>
           </div>
         </div>
       </div>
@@ -92,6 +84,7 @@
             <div class="event-footer">
               <span class="event-price" *ngIf="event.price > 0">${{ event.price }}</span>
               <span class="event-price free" *ngIf="event.price === 0">Free</span>
+              <span class="event-price" *ngIf="event.price === -1">Price TBA</span>
             </div>
           </div>
         </div>
@@ -146,7 +139,8 @@
     </ion-header>
     <ion-content class="modal-content">
       <div class="event-hero" *ngIf="selectedEvent">
-        <div class="event-hero-image" [style.background-image]="'url(' + (selectedEvent.imageUrl || 'assets/event-default.jpg') + ')'">
+        <div class="event-hero-image"
+          [style.background-image]="'url(' + (selectedEvent.imageUrl || 'assets/event-default.jpg') + ')'">
           <div class="event-hero-overlay">
             <div class="dna-circle">
               <span class="dna-score">{{ selectedEvent.dnaMatch || 0 }}%</span>
@@ -169,7 +163,7 @@
           </span>
         </div>
         <p class="detail-description">{{ selectedEvent.description }}</p>
-        
+
         <div class="detail-tags">
           <span class="tag-chip" *ngFor="let tag of selectedEvent.tags">
             {{ tag }}
@@ -181,6 +175,7 @@
             <span class="price-label">Ticket Price</span>
             <span class="price-value" *ngIf="selectedEvent.price > 0">${{ selectedEvent.price }}</span>
             <span class="price-value free" *ngIf="selectedEvent.price === 0">Free</span>
+            <span class="price-value" *ngIf="selectedEvent.price === -1">TBA</span>
           </div>
           <div class="match-block">
             <span class="match-label">Your Match</span>
@@ -197,6 +192,100 @@
           <button class="btn-buy" (click)="buyTicket()" *ngIf="selectedEvent.price > 0">
             <ion-icon name="card-outline"></ion-icon>
             Buy with NETS Pay
+          </button>
+        </div>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+<!-- Activity Detail Modal -->
+<ion-modal [isOpen]="showActivityModal" (didDismiss)="closeActivityModal()" class="activity-modal">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeActivityModal()">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Activity Details</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="modal-content">
+      <div class="event-hero" *ngIf="selectedActivity">
+        <div class="event-hero-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          <div class="event-hero-overlay">
+            <div class="dna-circle">
+              <span class="dna-score">{{ selectedActivity.dnaMatch || 0 }}%</span>
+              <span class="dna-label">DNA Match</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-detail" *ngIf="selectedActivity">
+        <h2 class="detail-title">{{ selectedActivity.title }}</h2>
+        <div class="detail-meta">
+          <span class="detail-date">
+            <ion-icon name="location-outline"></ion-icon>
+            {{ selectedActivity.location }} · {{ selectedActivity.distance }}
+          </span>
+        </div>
+        <p class="detail-description">{{ selectedActivity.description }}</p>
+
+        <div class="detail-tags">
+          <span class="tag-chip" *ngFor="let tag of selectedActivity.tags">
+            {{ tag }}
+          </span>
+        </div>
+
+        <div class="detail-price-row">
+          <div class="price-block">
+            <span class="price-label">Estimated Cost</span>
+            <span class="price-value">~${{ selectedActivity.estimatedCost }}</span>
+          </div>
+          <div class="match-block">
+            <span class="match-label">Your Match</span>
+            <span class="match-value">{{ selectedActivity.dnaMatch || 0 }}%</span>
+          </div>
+        </div>
+
+        <!-- Date & Time Picker -->
+        <div class="picker-section">
+          <h4 class="section-subtitle">When do you want to do this?</h4>
+
+          <ion-item lines="none" class="picker-item">
+            <ion-icon name="calendar-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>Date</ion-label>
+            <ion-datetime-button datetime="activityDate"></ion-datetime-button>
+          </ion-item>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime id="activityDate" [value]="selectedActivityDate" (ionChange)="onDateChange($event)"
+                presentation="date" [min]="todayStr" [max]="maxDateStr">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+
+          <ion-item lines="none" class="picker-item">
+            <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>Time</ion-label>
+            <ion-datetime-button datetime="activityTime"></ion-datetime-button>
+          </ion-item>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime id="activityTime" [value]="selectedActivityTime" (ionChange)="onTimeChange($event)"
+                presentation="time">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button class="btn-predict" (click)="addActivityToCalendar()">
+            <ion-icon name="calendar-outline"></ion-icon>
+            Add to Calendar
           </button>
         </div>
       </div>

@@ -4,9 +4,6 @@ import { Event } from '../models/explore.model';
 
 @Injectable({ providedIn: 'root' })
 export class TicketmasterApiService {
-  // ═══════════════════════════════════════════════════════════
-  // SWAP YOUR API KEY HERE
-  // ═══════════════════════════════════════════════════════════
   private readonly API_KEY = 'ZLAOD2zjsYdeuXFC2bcUwmKUBNfxHdhG';
   private readonly BASE_URL = 'https://app.ticketmaster.com/discovery/v2';
   
@@ -41,7 +38,7 @@ export class TicketmasterApiService {
       date: this.formatDate(e.dates?.start?.dateTime || e.dates?.start?.localDate),
       venue: e._embedded?.venues?.[0]?.name || 'Singapore',
       description: e.description || e.info || 'No description available.',
-      price: this.extractPrice(e.priceRanges),
+      price: this.extractPrice(e),
       tags: this.extractTags(e.classifications, e.name),
       isFeatured: idx === 0, // Top result featured
       imageUrl: e.images?.[0]?.url || null
@@ -58,10 +55,77 @@ export class TicketmasterApiService {
     if (genre === 'Food') return 'Food & Drink';
     return 'Entertainment';
   }
+  private extractPrice(event: any): number {
+    const ranges = event.priceRanges;
+    
+    // Case 1: Ticketmaster provides explicit price ranges
+    if (ranges?.length) {
+      const min = ranges[0].min;
+      const max = ranges[0].max;
+      // Use average if both exist, otherwise min
+      if (min != null && max != null) return Math.round((min + max) / 2);
+      if (min != null) return Math.round(min);
+      if (max != null) return Math.round(max);
+    }
 
-  private extractPrice(ranges: any[]): number {
-    if (!ranges?.length) return 0;
-    return Math.round(ranges[0].min || 0);
+    // Case 2: Check for seatmap / ticket info that implies paid event
+    const seatmap = event.seatmap?.staticUrl;
+    const ticketInfo = event.ticketLimit?.info || '';
+    const pleaseNote = event.pleaseNote || '';
+    const combinedText = (ticketInfo + ' ' + pleaseNote).toLowerCase();
+    
+    // If it has a seatmap and mentions ticket sales, it's likely paid
+    const hasSeatmap = !!seatmap;
+    const mentionsTickets = combinedText.includes('ticket') || combinedText.includes('sale');
+    
+    if (hasSeatmap && mentionsTickets) {
+      // Infer typical price based on venue/category
+      return this.inferPrice(event);
+    }
+
+    // Case 3: Check classifications for typical price tiers
+    const classifications = event.classifications;
+    if (classifications?.length) {
+      const seg = classifications[0]?.segment?.name?.toLowerCase();
+      const genre = classifications[0]?.genre?.name?.toLowerCase();
+      
+      // High-value events
+      if (seg === 'music' && this.isMajorArtist(event.name)) return 150;
+      if (seg === 'sports') return 80;
+      if (genre === 'comedy') return 65;
+    }
+
+    // Default: unknown — show as "TBA" instead of "Free"
+    return -1;
+  }
+
+  private inferPrice(event: any): number {
+    const venue = (event._embedded?.venues?.[0]?.name || '').toLowerCase();
+    const name = (event.name || '').toLowerCase();
+    
+    // Stadium / arena shows = expensive
+    if (venue.includes('stadium') || venue.includes('arena') || venue.includes('indoor stadium')) {
+      return name.includes('k-pop') || name.includes('kpop') ? 150 : 120;
+    }
+    
+    // Theater / hall shows = mid-range
+    if (venue.includes('theatre') || venue.includes('theater') || venue.includes('hall') || venue.includes('esplanade')) {
+      return 75;
+    }
+    
+    // Club / small venue = cheaper
+    if (venue.includes('club') || venue.includes('live house')) {
+      return 45;
+    }
+    
+    // Default guess
+    return 60;
+  }
+
+  private isMajorArtist(name: string): boolean {
+    const majorKeywords = ['world tour', 'live', 'concert', 'k-pop', 'kpop', 'festival'];
+    const lower = name.toLowerCase();
+    return majorKeywords.some(k => lower.includes(k));
   }
 
   private extractTags(classifications: any[], name: string): string[] {
