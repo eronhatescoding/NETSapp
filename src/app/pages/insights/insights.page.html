@@ -15,45 +15,85 @@
 <ion-content class="dna-content">
   <ng-container *ngIf="dna$ | async as dna; else loading">
 
-    <!-- ── Profile block ─────────────────────────────────── -->
-    <div class="profile-section animate-fade-in">
-      <div class="avatar">
-        <span class="avatar-initials">C</span>
-      </div>
-      <h1 class="profile-name">Calvin</h1>
-      <p class="profile-sub">Your Consumer DNA</p>
+    <!-- ── Page title ────────────────────────────────────── -->
+    <h2 class="dna-page-title animate-fade-in">Your Consumer DNA</h2>
 
-      <!-- Persona chips -->
-      <div class="persona-chips" *ngIf="dna.personas.length > 0">
-        <div
-          class="persona-chip"
-          *ngFor="let p of dna.personas"
-          [style.background]="p.color + '18'"
-          [style.border-color]="p.color + '55'">
-          <span class="chip-emoji">{{ p.emoji }}</span>
-          <span class="chip-name" [style.color]="p.color">{{ p.name }}</span>
+    <!-- ── Two-column header ─────────────────────────────── -->
+    <div class="dna-header-block animate-fade-in">
+
+      <!-- Left: avatar + name -->
+      <div class="header-identity">
+        <div class="avatar">
+          <span class="avatar-initials">C</span>
         </div>
+        <h1 class="identity-name">Calvin</h1>
       </div>
-      <div class="persona-placeholder" *ngIf="dna.personas.length === 0">
-        <p class="placeholder-hint">Pay more to unlock your personas ✨</p>
+
+      <!-- Right: recommendation card (Eron's top DNA match) -->
+      <div class="rec-card nets-card" (click)="goToExplore()">
+        <p class="rec-eyebrow">✨ For you</p>
+        <ng-container *ngIf="topMatch$ | async as match; else recLoading">
+          <p class="rec-name">{{ match.title }}</p>
+          <p class="rec-reason">{{ match.matchReason }}</p>
+        </ng-container>
+        <ng-template #recLoading>
+          <p class="rec-loading">Finding your match…</p>
+        </ng-template>
+        <ion-icon name="chevron-forward-outline" class="rec-chevron"></ion-icon>
+      </div>
+
+    </div>
+
+    <!-- Cyan solid divider -->
+    <div class="header-divider"></div>
+
+    <!-- ── Persona showcase ──────────────────────────────── -->
+    <div class="persona-section" *ngIf="dna.personas.length > 0">
+      <h3 class="persona-section-title">Know your persona!</h3>
+      <p class="persona-section-sub">Based on your spending habits:</p>
+
+      <div class="persona-cards">
+        <div class="persona-card" *ngFor="let p of dna.personas"
+             (click)="openPersona(p)" (keydown.enter)="openPersona(p)"
+             role="button" tabindex="0">
+
+          <!-- Image slot — placeholder beneath, real image on top when file exists -->
+          <div class="persona-image-wrap"
+               [style.background]="p.color + '18'"
+               [attr.aria-label]="p.name + ' persona'">
+            <div class="persona-ph">
+              <span class="ph-emoji">{{ p.emoji }}</span>
+              <ion-icon [name]="getPersonaIcon(p.id)" [style.color]="p.color" class="ph-icon" aria-hidden="true"></ion-icon>
+            </div>
+            <img class="persona-img"
+                 [src]="'assets/personas/' + p.id + '.png'"
+                 [alt]="p.name"
+                 (error)="hidePersonaImage($event)">
+          </div>
+
+          <p class="persona-card-name">{{ p.name }}</p>
+        </div>
       </div>
     </div>
 
-    <!-- ── Stats card ────────────────────────────────────── -->
+    <!-- ── Stats card (all-time) ─────────────────────────── -->
     <div class="stats-card">
-      <div class="stat">
-        <span class="stat-value">${{ dna.totals.spent | number:'1.0-0' }}</span>
-        <span class="stat-label">Spent</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat">
-        <span class="stat-value">${{ dna.totals.income | number:'1.0-0' }}</span>
-        <span class="stat-label">Income</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat">
-        <span class="stat-value">{{ dna.totals.txnCount }}</span>
-        <span class="stat-label">Txns</span>
+      <p class="stats-eyebrow">All-time</p>
+      <div class="stats-inner">
+        <div class="stat">
+          <span class="stat-value">${{ dna.totals.spent | number:'1.0-0' }}</span>
+          <span class="stat-label">Spent</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-value">${{ dna.totals.income | number:'1.0-0' }}</span>
+          <span class="stat-label">Income</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-value">{{ dna.totals.txnCount }}</span>
+          <span class="stat-label">Txns</span>
+        </div>
       </div>
     </div>
 
@@ -72,16 +112,25 @@
       <div class="card">
         <div
           class="breakdown-item"
-          *ngFor="let cat of dna.categoryBreakdown; let i = index">
+          *ngFor="let cat of dna.categoryBreakdown; let i = index"
+          (click)="toggleCategory(cat.category)"
+          (keydown.enter)="toggleCategory(cat.category)"
+          (keydown.space)="toggleCategory(cat.category)"
+          [class.breakdown-expanded]="isCategoryExpanded(cat.category)"
+          [attr.aria-expanded]="isCategoryExpanded(cat.category)"
+          role="button"
+          tabindex="0">
           <div class="breakdown-row">
             <ion-icon
               [name]="getCategoryIcon(cat.category)"
               class="cat-icon"
-              [class.cat-icon-top]="i === 0">
+              [class.cat-icon-top]="i === 0"
+              aria-hidden="true">
             </ion-icon>
             <span class="breakdown-name">{{ cat.category }}</span>
             <span class="breakdown-pct" [class.pct-top]="i === 0">{{ cat.pct | number:'1.0-0' }}%</span>
             <span class="breakdown-amt">${{ cat.amount | number:'1.0-0' }}</span>
+            <ion-icon name="chevron-down-outline" class="expand-chevron" aria-hidden="true"></ion-icon>
           </div>
           <div class="progress-track">
             <div
@@ -90,26 +139,46 @@
               [class.fill-red]="i === 0">
             </div>
           </div>
+          <!-- Per-category merchant drill-down -->
+          <div class="category-drill" [class.category-drill-open]="isCategoryExpanded(cat.category)">
+            <div class="drill-inner">
+              <div class="drill-merchant-row" *ngFor="let m of getMerchantsForCategory(cat.category)">
+                <div class="drill-icon-wrap">
+                  <ion-icon [name]="getMerchantIcon(m.merchantId)" aria-hidden="true"></ion-icon>
+                </div>
+                <span class="drill-name">{{ m.name }}</span>
+                <span class="drill-visits">{{ m.count }}x</span>
+                <span class="drill-spend">${{ m.spend | number:'1.2-2' }}</span>
+              </div>
+              <p class="drill-empty" *ngIf="getMerchantsForCategory(cat.category).length === 0">
+                No merchant data
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ── Top merchants ─────────────────────────────────── -->
+    <!-- ── Top merchants bar chart ──────────────────────── -->
     <div class="section" *ngIf="dna.topMerchants.length > 0">
       <h3 class="section-title">Top Merchants</h3>
-      <div class="card card-flush">
-        <div
-          class="merchant-row"
-          *ngFor="let m of dna.topMerchants | slice:0:5; let i = index">
-          <span class="merchant-rank">{{ i + 1 }}</span>
-          <div class="merchant-icon-wrap">
-            <ion-icon [name]="getMerchantIcon(m.merchantId)"></ion-icon>
+      <div class="card merchants-chart">
+        <div class="chart-row"
+             *ngFor="let m of dna.topMerchants | slice:0:5; let i = index">
+          <div class="chart-label-row">
+            <div class="chart-icon-wrap">
+              <ion-icon [name]="getMerchantIcon(m.merchantId)" aria-hidden="true"></ion-icon>
+            </div>
+            <span class="chart-name">{{ m.name }}</span>
+            <span class="chart-visits">{{ m.count }}x</span>
+            <span class="chart-spend">${{ m.spend | number:'1.0-0' }}</span>
           </div>
-          <div class="merchant-info">
-            <span class="merchant-name">{{ m.name }}</span>
-            <span class="merchant-meta">{{ m.count }}x visits</span>
+          <div class="chart-track" role="img" [attr.aria-label]="m.name + ': ' + m.count + ' visits'">
+            <div class="chart-bar"
+                 [style.--bar-pct]="getMerchantBarPct(m.count, dna) + '%'"
+                 [style.--bar-delay]="(i * 90) + 'ms'">
+            </div>
           </div>
-          <span class="merchant-spend">${{ m.spend | number:'1.0-0' }}</span>
         </div>
       </div>
     </div>
@@ -132,28 +201,6 @@
       </div>
     </div>
 
-    <!-- ── Detected patterns (compact) ──────────────────── -->
-    <div class="section" *ngIf="patterns.length > 0">
-      <h3 class="section-title">Detected Patterns</h3>
-      <div class="card card-flush">
-        <div class="pattern-row" *ngFor="let p of patterns">
-          <div class="pattern-icon-wrap">
-            <ion-icon [name]="getPatternIcon(p.subcategory)"></ion-icon>
-          </div>
-          <div class="pattern-info">
-            <span class="pattern-name">{{ p.subcategory || p.category }}</span>
-            <span class="pattern-meta">{{ p.frequency }} · {{ p.typicalTimeRange }}</span>
-          </div>
-          <div class="pattern-right">
-            <span class="streak-badge" *ngIf="p.streakCount >= 3">
-              🔥 {{ p.streakCount }}
-            </span>
-            <span class="pattern-conf">{{ p.confidence }}%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div style="height: 100px;"></div>
   </ng-container>
 
@@ -164,4 +211,45 @@
       <p>Building your DNA…</p>
     </div>
   </ng-template>
+
 </ion-content>
+
+<!-- ── Persona detail popup ──────────────────────────────────────── -->
+<ion-modal [isOpen]="showPersonaModal" (didDismiss)="closePersonaModal()"
+           class="persona-popup" [breakpoints]="[0, 1]" [initialBreakpoint]="1">
+  <ng-template>
+    <ion-content class="persona-popup-content" *ngIf="selectedPersona">
+
+      <!-- Image / placeholder -->
+      <div class="popup-image-wrap" [style.background]="selectedPersona.color + '18'">
+        <div class="popup-ph">
+          <span class="popup-ph-emoji">{{ selectedPersona.emoji }}</span>
+          <ion-icon [name]="getPersonaIcon(selectedPersona.id)"
+                    [style.color]="selectedPersona.color"
+                    class="popup-ph-icon" aria-hidden="true"></ion-icon>
+        </div>
+        <img class="popup-img"
+             [src]="'assets/personas/' + selectedPersona.id + '.png'"
+             [alt]="selectedPersona.name"
+             (error)="hidePersonaImage($event)">
+      </div>
+
+      <!-- Text body -->
+      <div class="popup-body">
+        <h2 class="popup-name">
+          {{ selectedPersona.emoji }} {{ selectedPersona.name }}
+        </h2>
+
+        <ng-container *ngIf="selectedPersona.description; else noDesc">
+          <p class="popup-desc">{{ selectedPersona.description }}</p>
+        </ng-container>
+        <ng-template #noDesc>
+          <p class="popup-desc-placeholder">Description coming soon…</p>
+        </ng-template>
+
+        <button class="popup-close-btn" (click)="closePersonaModal()">Close</button>
+      </div>
+
+    </ion-content>
+  </ng-template>
+</ion-modal>

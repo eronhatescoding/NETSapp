@@ -60,6 +60,14 @@ body {
   body { background: var(--app-bg, #FAFAFA); color: var(--text-primary, #0B1A2B); }
 }
 
+/* ── ion-datetime: force light theme regardless of system preference ── */
+/* Must be global because ion-datetime renders outside component scope   */
+ion-datetime {
+  --background: var(--surface, #FFFFFF);
+  --background-rgb: 255, 255, 255;
+  color: var(--text-primary, #0B1A2B);
+}
+
 /* ── Reduced motion gate ────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

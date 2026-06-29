@@ -31,6 +31,20 @@ export class TransactionDetailPage implements OnInit {
     return icons[category] || 'card';
   }
 
+  getCategoryIcon(category: string): string {
+    const icons: Record<string, string> = {
+      'Food & Beverage': 'restaurant-outline',
+      'Transport':       'car-outline',
+      'Entertainment':   'film-outline',
+      'Fitness':         'barbell-outline',
+      'Shopping':        'bag-handle-outline',
+      'Education':       'book-outline',
+      'Income':          'cash-outline',
+      'Lifestyle & Services': 'sparkles-outline',
+    };
+    return icons[category] || 'grid-outline';
+  }
+
   getInsightText(): string {
     if (!this.transaction) return '';
     const t = this.transaction;

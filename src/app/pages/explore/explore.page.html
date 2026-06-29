@@ -14,20 +14,97 @@
 
 <ion-content class="explore-content">
 
-  <!-- Search Bar -->
-  <div class="search-wrap">
-    <ion-searchbar [(ngModel)]="searchText" (ionChange)="onSearchChange()" placeholder="Search events & activities..."
-      animated="true" class="explore-search">
+  <!-- Search + Filter Row -->
+  <div class="search-filter-row">
+    <ion-searchbar [(ngModel)]="searchText" (ionChange)="onSearchChange()"
+      placeholder="Search events & activities..." animated="true" class="explore-search">
     </ion-searchbar>
+    <button class="filter-btn" [class.filter-active]="activeFilterCount > 0"
+            (click)="filterOpen = !filterOpen" aria-label="Filters">
+      <ion-icon [name]="filterOpen ? 'close-outline' : 'options-outline'"></ion-icon>
+      <span class="filter-count" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
+    </button>
+  </div>
+
+  <!-- Filter Dropdown Panel -->
+  <div class="filter-panel" [class.filter-panel-open]="filterOpen">
+
+    <!-- Events filters -->
+    <ng-container *ngIf="activeTab === 'events'">
+      <div class="filter-group" *ngIf="genreOptions.length > 0">
+        <p class="filter-group-label">Genre</p>
+        <div class="filter-options">
+          <button class="filter-chip" *ngFor="let opt of genreOptions"
+                  [class.filter-chip-active]="isSelected('genre', opt.value)"
+                  (click)="toggleFilter('genre', opt.value)">
+            {{ opt.label }}
+          </button>
+        </div>
+      </div>
+      <div class="filter-group" *ngIf="venueOptions.length > 0">
+        <p class="filter-group-label">Venue</p>
+        <div class="filter-options">
+          <button class="filter-chip" *ngFor="let venue of venueOptions"
+                  [class.filter-chip-active]="isSelected('venue', venue)"
+                  (click)="toggleFilter('venue', venue)">
+            {{ venue }}
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Activities filters -->
+    <ng-container *ngIf="activeTab === 'activities'">
+      <div class="filter-group" *ngIf="categoryOptions.length > 0">
+        <p class="filter-group-label">Category</p>
+        <div class="filter-options">
+          <button class="filter-chip" *ngFor="let cat of categoryOptions"
+                  [class.filter-chip-active]="isSelected('category', cat)"
+                  (click)="toggleFilter('category', cat)">
+            {{ cat }}
+          </button>
+        </div>
+      </div>
+      <div class="filter-group" *ngIf="areaOptions.length > 0">
+        <p class="filter-group-label">Area</p>
+        <div class="filter-options">
+          <button class="filter-chip" *ngFor="let area of areaOptions"
+                  [class.filter-chip-active]="isSelected('area', area)"
+                  (click)="toggleFilter('area', area)">
+            {{ area }}
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="filter-actions" *ngIf="activeFilterCount > 0">
+      <button class="filter-clear-btn" (click)="clearFilters()">Clear all</button>
+    </div>
+  </div>
+
+  <!-- Active filter chips -->
+  <div class="active-chips" *ngIf="activeFilterCount > 0">
+    <button class="active-chip" *ngFor="let v of selectedVenues" (click)="toggleFilter('venue', v)">
+      {{ v }} <ion-icon name="close-outline"></ion-icon>
+    </button>
+    <button class="active-chip" *ngFor="let g of selectedGenres" (click)="toggleFilter('genre', g)">
+      {{ tagLabel(g) }} <ion-icon name="close-outline"></ion-icon>
+    </button>
+    <button class="active-chip" *ngFor="let c of selectedCategories" (click)="toggleFilter('category', c)">
+      {{ c }} <ion-icon name="close-outline"></ion-icon>
+    </button>
+    <button class="active-chip" *ngFor="let a of selectedAreas" (click)="toggleFilter('area', a)">
+      {{ a }} <ion-icon name="close-outline"></ion-icon>
+    </button>
   </div>
 
   <!-- Tab Switcher -->
   <div class="tab-switcher">
-    <button class="tab-btn" [class.active]="activeTab === 'events'" (click)="activeTab = 'events'">
+    <button class="tab-btn" [class.active]="activeTab === 'events'" (click)="setActiveTab('events')">
       <ion-icon name="ticket-outline"></ion-icon>
       Events
     </button>
-    <button class="tab-btn" [class.active]="activeTab === 'activities'" (click)="activeTab = 'activities'">
+    <button class="tab-btn" [class.active]="activeTab === 'activities'" (click)="setActiveTab('activities')">
       <ion-icon name="compass-outline"></ion-icon>
       Activities
     </button>
@@ -44,17 +121,19 @@
 
   <!-- Events Tab -->
   <ng-container *ngIf="activeTab === 'events' && !(loading$ | async)">
-    <!-- Hero Featured Event -->
     <ng-container *ngIf="filteredEvents$ | async as events">
+
+      <!-- Hero: top DNA-match event -->
       <div class="hero-card" *ngIf="events[0]" (click)="openEvent(events[0])">
         <div class="hero-image"
-          [style.background-image]="'url(' + (events[0].imageUrl || 'assets/event-default.jpg') + ')'">
-          <div class="hero-overlay">
-            <div class="hero-badge">
-              <ion-icon name="flame-outline"></ion-icon>
-              {{ events[0].dnaMatch || 0 }}% Match
-            </div>
-          </div>
+             [style.background-image]="events[0].imageUrl ? 'url(' + events[0].imageUrl + ')' : null"
+             [class.hero-placeholder]="!events[0].imageUrl"
+             [attr.role]="!events[0].imageUrl ? 'img' : null"
+             [attr.aria-label]="!events[0].imageUrl ? (events[0].category + ' event') : null">
+          <ion-icon *ngIf="!events[0].imageUrl" class="placeholder-icon"
+                    [name]="getCategoryIcon(events[0].category)"
+                    aria-hidden="true"></ion-icon>
+          <div class="hero-match-badge">{{ events[0].dnaMatch || 0 }}% Match</div>
         </div>
         <div class="hero-info">
           <h3 class="hero-title">{{ events[0].title }}</h3>
@@ -68,18 +147,17 @@
         </div>
       </div>
 
-      <!-- Event List -->
+      <!-- Collapsed list: remaining events -->
       <div class="event-list">
         <div class="event-card" *ngFor="let event of events.slice(1)" (click)="openEvent(event)">
-          <div class="event-image" *ngIf="event.imageUrl">
-            <img [src]="event.imageUrl" alt="">
+          <div class="event-thumb" role="img" [attr.aria-label]="event.title">
+            <img *ngIf="event.imageUrl" [src]="event.imageUrl" [alt]="event.title">
+            <ion-icon *ngIf="!event.imageUrl" [name]="getCategoryIcon(event.category)" aria-hidden="true"></ion-icon>
           </div>
           <div class="event-content">
             <div class="event-header">
               <span class="event-category">{{ event.category }}</span>
-              <span class="event-match" [class]="'match-' + getTasteColor(event.dnaMatch || 0)">
-                {{ event.dnaMatch || 0 }}%
-              </span>
+              <span class="match-badge">{{ event.dnaMatch || 0 }}%</span>
             </div>
             <h4 class="event-title">{{ event.title }}</h4>
             <p class="event-meta">{{ event.date }} · {{ event.venue }}</p>
@@ -92,35 +170,57 @@
           </div>
         </div>
       </div>
+
     </ng-container>
   </ng-container>
 
   <!-- Activities Tab -->
   <ng-container *ngIf="activeTab === 'activities' && !(loading$ | async)">
-    <div class="activity-list" *ngIf="filteredActivities$ | async as activities">
-      <div class="activity-card" *ngFor="let activity of activities" (click)="openActivity(activity)">
-        <div class="activity-icon">
-          <ion-icon name="pin-outline"></ion-icon>
+    <ng-container *ngIf="filteredActivities$ | async as activities">
+
+      <!-- Hero: top DNA-match activity (always placeholder tile) -->
+      <div class="hero-card activity-hero-card" *ngIf="activities[0]" (click)="openActivity(activities[0])">
+        <div class="hero-image hero-placeholder"
+             role="img" [attr.aria-label]="activities[0].category + ' activity'">
+          <ion-icon class="placeholder-icon" [name]="getCategoryIcon(activities[0].category)"
+                    aria-hidden="true"></ion-icon>
+          <div class="hero-match-badge">{{ activities[0].dnaMatch || 0 }}% Match</div>
         </div>
-        <div class="activity-content">
-          <div class="activity-header">
-            <span class="activity-category">{{ activity.category }}</span>
-            <span class="activity-match" [class]="'match-' + getTasteColor(activity.dnaMatch || 0)">
-              {{ activity.dnaMatch || 0 }}%
-            </span>
-          </div>
-          <h4 class="activity-title">{{ activity.title }}</h4>
-          <p class="activity-location">{{ activity.location }} · {{ activity.distance }}</p>
-          <p class="activity-reason">{{ activity.matchReason }}</p>
-          <div class="activity-footer">
-            <span class="activity-cost">~${{ activity.estimatedCost }}</span>
-            <span class="activity-weather" *ngIf="activity.weatherMultiplier && activity.weatherMultiplier < 1">
-              <ion-icon name="rainy-outline"></ion-icon> Weather alert
-            </span>
+        <div class="hero-info">
+          <h3 class="hero-title">{{ activities[0].title }}</h3>
+          <p class="hero-meta">{{ activities[0].location }} · {{ activities[0].distance }}</p>
+          <p class="hero-reason">{{ activities[0].matchReason }}</p>
+          <div class="hero-footer">
+            <span class="hero-price">~${{ activities[0].estimatedCost }}</span>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- Collapsed list: remaining activities -->
+      <div class="activity-list">
+        <div class="activity-card" *ngFor="let activity of activities.slice(1)" (click)="openActivity(activity)">
+          <div class="activity-thumb" role="img" [attr.aria-label]="activity.category">
+            <ion-icon [name]="getCategoryIcon(activity.category)" aria-hidden="true"></ion-icon>
+          </div>
+          <div class="activity-content">
+            <div class="activity-header">
+              <span class="activity-category">{{ activity.category }}</span>
+              <span class="match-badge">{{ activity.dnaMatch || 0 }}%</span>
+            </div>
+            <h4 class="activity-title">{{ activity.title }}</h4>
+            <p class="activity-location">{{ activity.location }} · {{ activity.distance }}</p>
+            <p class="activity-reason">{{ activity.matchReason }}</p>
+            <div class="activity-footer">
+              <span class="activity-cost">~${{ activity.estimatedCost }}</span>
+              <span class="activity-weather" *ngIf="activity.weatherMultiplier && activity.weatherMultiplier < 1">
+                <ion-icon name="rainy-outline"></ion-icon> Weather alert
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
   </ng-container>
 
   <!-- Spacer -->
@@ -131,7 +231,7 @@
 <ion-modal [isOpen]="showEventModal" (didDismiss)="closeEventModal()" class="event-modal">
   <ng-template>
     <ion-header class="ion-no-border">
-      <ion-toolbar>
+      <ion-toolbar class="nets-toolbar">
         <ion-buttons slot="start">
           <ion-button (click)="closeEventModal()">
             <ion-icon name="arrow-back-outline"></ion-icon>
@@ -169,7 +269,7 @@
 
         <div class="detail-tags">
           <span class="tag-chip" *ngFor="let tag of selectedEvent.tags">
-            {{ tag }}
+            {{ tagLabel(tag) }}
           </span>
         </div>
 
@@ -205,7 +305,7 @@
 <ion-modal [isOpen]="showActivityModal" (didDismiss)="closeActivityModal()" class="activity-modal">
   <ng-template>
     <ion-header class="ion-no-border">
-      <ion-toolbar>
+      <ion-toolbar class="nets-toolbar">
         <ion-buttons slot="start">
           <ion-button (click)="closeActivityModal()">
             <ion-icon name="arrow-back-outline"></ion-icon>
@@ -216,7 +316,7 @@
     </ion-header>
     <ion-content class="modal-content">
       <div class="event-hero" *ngIf="selectedActivity">
-        <div class="event-hero-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="event-hero-image placeholder-hero">
           <div class="event-hero-overlay">
             <div class="dna-circle">
               <span class="dna-score">{{ selectedActivity.dnaMatch || 0 }}%</span>
@@ -238,7 +338,7 @@
 
         <div class="detail-tags">
           <span class="tag-chip" *ngFor="let tag of selectedActivity.tags">
-            {{ tag }}
+            {{ tagLabel(tag) }}
           </span>
         </div>
 

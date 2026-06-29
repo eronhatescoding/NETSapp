@@ -197,15 +197,6 @@
 .stagger-5 { animation-delay: 0.25s; opacity: 0; }
 .stagger-6 { animation-delay: 0.3s; opacity: 0; }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ion-background-color: #0F172A;
-    --ion-background-color-rgb: 15, 23, 42;
-    --ion-text-color: #F8FAFC;
-    --ion-text-color-rgb: 248, 250, 252;
-    --nets-gray-50: #1E293B;
-    --nets-gray-100: #334155;
-    --nets-gray-200: #475569;
-  }
-}
+/* Dark mode — disabled: app is light-only. Removing this block
+   prevents ion-datetime and other components from picking up
+   white text on white background when the system is in dark mode. */

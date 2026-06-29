@@ -18,8 +18,8 @@ ion-content.calendar-content {
 /* ── DNA live indicator ───────────────────────────────────────── */
 .dna-status-bar {
   display: flex;
-  justify-content: flex-end;
-  padding: 6px 16px 0;
+  justify-content: flex-start;
+  padding: 6px 16px;
 }
 
 .dna-pulse {
@@ -496,7 +496,7 @@ ion-content.calendar-content {
   width: 2px;
   min-height: 8px;
   background: linear-gradient(180deg, var(--primary, #00A6CB), var(--primary-glow, #0DCAF0));
-  opacity: 0.35;
+  opacity: 0.75;
   margin: 3px 0;
   border-radius: 1px;
 }
@@ -575,6 +575,7 @@ ion-content.calendar-content {
 /* ── Patterns card ────────────────────────────────────────────── */
 .patterns-card {
   margin: 0 16px 12px;
+  border: 2px  #0DCAF0 solid;
 }
 
 .patterns-header {
@@ -1052,7 +1053,7 @@ ion-content.calendar-content {
   display: flex;
   flex-direction: column;
 }
-
+// ------------------------------------------------------------------------------------
 /* Modal card — .nets-card base + left-edge variant */
 .modal-rail-card {
   flex: 1;
@@ -1060,11 +1061,12 @@ ion-content.calendar-content {
   border-left: 3px solid transparent;
   cursor: pointer;
   transition: opacity 150ms;
+  margin-bottom: 14px;
 
   &.card-paid   { border-left-color: var(--spent, #EA0029); }
   &.card-income { border-left-color: var(--income, #16B364); }
   &.card-predicted {
-    border-left: 3px dashed var(--predicted, #F5A524);
+    border-left: 3px solid var(--predicted, #F5A524);
     background: rgba(245, 165, 36, 0.018);
   }
   &.card-planned {
@@ -1308,6 +1310,7 @@ ion-content.calendar-content {
 /* ── Day-total footer card ────────────────────────────────────── */
 .day-total-card {
   margin: 8px 16px 16px;
+  border: #00A6CB solid 2px;
 }
 
 .dtc-row {

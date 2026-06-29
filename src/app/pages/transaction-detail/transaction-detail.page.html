@@ -1,107 +1,142 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar class="detail-toolbar" [class.income]="transaction?.type === 'credit'">
+  <ion-toolbar class="nets-toolbar">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/calendar" text="" icon="arrow-back-outline" class="back-btn"></ion-back-button>
     </ion-buttons>
-    <ion-title>Transaction</ion-title>
+    <ion-title class="txn-page-title">Transaction</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="detail-content" *ngIf="transaction">
-  <!-- Amount Hero -->
-  <div class="amount-hero" [class.income]="transaction.type === 'credit'">
-    <div class="amount-hero-bg"></div>
-    <div class="amount-hero-content">
-      <div class="amount-icon">
-        <ion-icon [name]="getTransactionIcon(transaction.category)"></ion-icon>
-      </div>
-      <span class="amount-value">
-        {{ transaction.type === 'debit' ? '-' : '+' }}${{ transaction.amount | number:'1.2-2' }}
+<ion-content class="txn-detail-content" *ngIf="transaction; else loading">
+
+  <!-- ── Amount hero ─────────────────────────────────────────── -->
+  <div class="hero-card" [class.hero-debit]="transaction.type === 'debit'" [class.hero-credit]="transaction.type === 'credit'">
+
+    <div class="hero-icon-wrap" [class.icon-debit]="transaction.type === 'debit'" [class.icon-credit]="transaction.type === 'credit'">
+      <ion-icon [name]="getTransactionIcon(transaction.category)"></ion-icon>
+    </div>
+
+    <span class="hero-amount tabular" [class.amount-debit]="transaction.type === 'debit'" [class.amount-credit]="transaction.type === 'credit'">
+      {{ transaction.type === 'debit' ? '−' : '+' }}${{ transaction.amount | number:'1.2-2' }}
+    </span>
+
+    <div class="hero-meta">
+      <span class="hero-type-pill" [class.pill-debit]="transaction.type === 'debit'" [class.pill-credit]="transaction.type === 'credit'">
+        {{ transaction.type === 'debit' ? 'NETS Pay' : 'Income' }}
       </span>
-      <ion-badge [color]="transaction.type === 'debit' ? 'danger' : 'success'" class="type-badge">
-        {{ transaction.type.toUpperCase() }}
-      </ion-badge>
+      <span class="hero-date tabular">{{ transaction.date }} · {{ transaction.time }}</span>
     </div>
   </div>
 
-  <!-- Details Card -->
-  <ion-card class="details-card">
-    <ion-card-content>
-      <div class="detail-row">
-        <div class="detail-icon-wrap">
-          <ion-icon name="pricetag-outline" color="primary"></ion-icon>
-        </div>
-        <div class="detail-info">
-          <span class="detail-label">Description</span>
-          <span class="detail-value">{{ transaction.description }}</span>
-        </div>
-      </div>
+  <!-- ── Details card ────────────────────────────────────────── -->
+  <div class="section-card">
 
-      <div class="detail-row">
-        <div class="detail-icon-wrap">
-          <ion-icon name="grid-outline" color="primary"></ion-icon>
-        </div>
-        <div class="detail-info">
-          <span class="detail-label">Category</span>
-          <span class="detail-value">{{ transaction.category }}</span>
-          <ion-badge *ngIf="transaction.subcategory" color="medium" class="sub-badge">{{ transaction.subcategory }}</ion-badge>
-        </div>
+    <div class="detail-row" *ngIf="transaction.description">
+      <div class="detail-icon-circle">
+        <ion-icon name="pricetag-outline"></ion-icon>
       </div>
-
-      <div class="detail-row">
-        <div class="detail-icon-wrap">
-          <ion-icon name="time-outline" color="primary"></ion-icon>
-        </div>
-        <div class="detail-info">
-          <span class="detail-label">Date & Time</span>
-          <span class="detail-value">{{ transaction.date }} at {{ transaction.time }}</span>
-        </div>
+      <div class="detail-info">
+        <span class="detail-label">Description</span>
+        <span class="detail-value">{{ transaction.description }}</span>
       </div>
+    </div>
 
-      <div class="detail-row" *ngIf="transaction.merchant">
-        <div class="detail-icon-wrap">
-          <ion-icon name="storefront-outline" color="primary"></ion-icon>
+    <div class="row-divider"></div>
+
+    <div class="detail-row">
+      <div class="detail-icon-circle">
+        <ion-icon [name]="getCategoryIcon(transaction.category)"></ion-icon>
+      </div>
+      <div class="detail-info">
+        <span class="detail-label">Category</span>
+        <span class="detail-value">{{ transaction.category }}</span>
+        <span class="sub-tag" *ngIf="transaction.subcategory">{{ transaction.subcategory }}</span>
+      </div>
+    </div>
+
+    <ng-container *ngIf="transaction.merchant">
+      <div class="row-divider"></div>
+      <div class="detail-row">
+        <div class="detail-icon-circle">
+          <ion-icon name="storefront-outline"></ion-icon>
         </div>
         <div class="detail-info">
           <span class="detail-label">Merchant</span>
           <span class="detail-value">{{ transaction.merchant }}</span>
         </div>
       </div>
+    </ng-container>
 
-      <div class="detail-row" *ngIf="transaction.location">
-        <div class="detail-icon-wrap">
-          <ion-icon name="location-outline" color="primary"></ion-icon>
+    <ng-container *ngIf="transaction.location">
+      <div class="row-divider"></div>
+      <div class="detail-row">
+        <div class="detail-icon-circle">
+          <ion-icon name="location-outline"></ion-icon>
         </div>
         <div class="detail-info">
           <span class="detail-label">Location</span>
           <span class="detail-value">{{ transaction.location }}</span>
         </div>
       </div>
+    </ng-container>
 
-      <div class="detail-row" *ngIf="transaction.paymentMethod">
-        <div class="detail-icon-wrap">
-          <ion-icon name="card-outline" color="primary"></ion-icon>
+    <div class="row-divider"></div>
+
+    <div class="detail-row">
+      <div class="detail-icon-circle">
+        <ion-icon name="time-outline"></ion-icon>
+      </div>
+      <div class="detail-info">
+        <span class="detail-label">Date & Time</span>
+        <span class="detail-value tabular">{{ transaction.date }}, {{ transaction.time }}</span>
+      </div>
+    </div>
+
+    <ng-container *ngIf="transaction.paymentMethod">
+      <div class="row-divider"></div>
+      <div class="detail-row">
+        <div class="detail-icon-circle">
+          <ion-icon name="card-outline"></ion-icon>
         </div>
         <div class="detail-info">
           <span class="detail-label">Payment Method</span>
           <span class="detail-value">{{ transaction.paymentMethod }}</span>
         </div>
       </div>
-    </ion-card-content>
-  </ion-card>
+    </ng-container>
 
-  <!-- AI Insight -->
-  <ion-card class="insight-card">
-    <ion-card-content>
-      <div class="insight-header">
-        <div class="insight-icon">
-          <ion-icon name="bulb" color="warning"></ion-icon>
-        </div>
-        <span class="insight-title">AI Insight</span>
+  </div>
+
+  <!-- ── DNA tags ────────────────────────────────────────────── -->
+  <div class="section-card tags-section" *ngIf="transaction.tags && transaction.tags.length > 0">
+    <div class="tags-header">
+      <ion-icon name="cellular-outline"></ion-icon>
+      <span class="tags-title">DNA Tags</span>
+    </div>
+    <div class="tags-wrap">
+      <span class="tag-pill" *ngFor="let tag of transaction.tags">{{ tag }}</span>
+    </div>
+  </div>
+
+  <!-- ── DNA insight ─────────────────────────────────────────── -->
+  <div class="insight-card">
+    <div class="insight-header">
+      <div class="insight-icon-wrap">
+        <ion-icon name="sparkles-outline"></ion-icon>
       </div>
-      <p class="insight-text">{{ getInsightText() }}</p>
-    </ion-card-content>
-  </ion-card>
+      <span class="insight-title">DNA Insight</span>
+    </div>
+    <p class="insight-body">{{ getInsightText() }}</p>
+  </div>
 
-  <div style="height: 40px;"></div>
+  <div style="height: 32px;"></div>
 </ion-content>
+
+<ng-template #loading>
+  <ion-content class="txn-detail-content">
+    <div class="loading-state">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Loading transaction…</p>
+    </div>
+  </ion-content>
+</ng-template>

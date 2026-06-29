@@ -1,6 +1,19 @@
-/* DNA Status Bar */
+/* ─────────────────────────────────────────────────────────────────
+   EXPLORE PAGE — white NETS theme, scoped to this page only
+   All colours via design tokens; no hardcoded hex.
+   ───────────────────────────────────────────────────────────────── */
+
+ion-content.explore-content {
+  --background: var(--app-bg, #FAFAFA);
+}
+
+.modal-content {
+  --background: var(--surface, #FFFFFF);
+}
+
+/* ── DNA Status Bar ─────────────────────────────────────────────── */
 .dna-status-bar {
-  background: linear-gradient(90deg, rgba(0, 85, 164, 0.08), rgba(227, 24, 55, 0.08));
+  background: linear-gradient(90deg, rgba(0, 166, 203, 0.08), rgba(234, 0, 41, 0.08));
   padding: 6px 16px;
   display: flex;
   justify-content: center;
@@ -14,7 +27,7 @@
     .pulse-dot {
       width: 8px;
       height: 8px;
-      background: #E31837;
+      background: var(--spent, #EA0029);
       border-radius: 50%;
       animation: pulse 2s infinite;
     }
@@ -22,7 +35,7 @@
     .pulse-text {
       font-size: 11px;
       font-weight: 600;
-      color: #0055A4;
+      color: var(--primary, #00A6CB);
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
@@ -30,20 +43,11 @@
 }
 
 @keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.5;
-    transform: scale(1.2);
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.2); }
 }
 
-/* DNA Loading State */
+/* ── DNA Loading State ──────────────────────────────────────────── */
 .dna-loading {
   display: flex;
   flex-direction: column;
@@ -61,30 +65,29 @@
   p {
     font-size: 16px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--text-primary, #0B1A2B);
     margin: 0 0 4px;
   }
 
   .sub {
     font-size: 13px;
-    color: #8e8e93;
+    color: var(--text-secondary, #6B7280);
   }
 }
 
-/* Hero Recommendation */
+/* ── Hero Recommendation (legacy block) ─────────────────────────── */
 .hero-recommendation {
   padding: 16px;
 
   .hero-card {
-    background: white;
+    background: var(--surface, #FFFFFF);
+    border: solid  #00A6CB 2px;
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 85, 164, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 166, 203, 0.12);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 
-    &:active {
-      transform: scale(0.98);
-    }
+    &:active { transform: scale(0.98); }
 
     .hero-image {
       height: 160px;
@@ -104,12 +107,10 @@
         gap: 6px;
         font-size: 12px;
         font-weight: 700;
-        color: #E31837;
+        color: var(--spent, #EA0029);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-        ion-icon {
-          font-size: 14px;
-        }
+        ion-icon { font-size: 14px; }
       }
 
       .hero-score {
@@ -124,14 +125,14 @@
           display: block;
           font-size: 28px;
           font-weight: 800;
-          color: #0055A4;
+          color: var(--primary, #00A6CB);
           line-height: 1;
         }
 
         .score-label {
           font-size: 10px;
           font-weight: 600;
-          color: #8e8e93;
+          color: var(--text-secondary, #6B7280);
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
@@ -144,14 +145,14 @@
       h2 {
         font-size: 18px;
         font-weight: 700;
-        color: #1a1a1a;
+        color: var(--text-primary, #0B1A2B);
         margin: 0 0 6px;
         line-height: 1.3;
       }
 
       .hero-reason {
         font-size: 13px;
-        color: #E31837;
+        color: var(--spent, #EA0029);
         font-weight: 600;
         margin: 0 0 12px;
       }
@@ -166,11 +167,11 @@
           align-items: center;
           gap: 4px;
           font-size: 12px;
-          color: #666;
+          color: var(--text-secondary, #6B7280);
 
           ion-icon {
             font-size: 14px;
-            color: #0055A4;
+            color: var(--primary, #00A6CB);
           }
         }
       }
@@ -181,8 +182,8 @@
         flex-wrap: wrap;
 
         .tag-chip {
-          --background: rgba(0, 85, 164, 0.08);
-          --color: #0055A4;
+          --background: rgba(0, 166, 203, 0.08);
+          --color: var(--primary, #00A6CB);
           font-size: 11px;
           font-weight: 600;
           height: 24px;
@@ -192,33 +193,9 @@
   }
 }
 
-/* Activity Cards */
-.activity-list {
-  padding: 0 16px 24px;
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-
-    h3 {
-      font-size: 17px;
-      font-weight: 700;
-      color: #1a1a1a;
-      margin: 0;
-    }
-
-    .count {
-      font-size: 12px;
-      color: #8e8e93;
-      font-weight: 500;
-    }
-  }
-}
-
+/* ── Old activity card block (legacy) ───────────────────────────── */
 .activity-card {
-  background: white;
+  background: var(--surface, #FFFFFF);
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 12px;
@@ -226,13 +203,11 @@
   position: relative;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-  &:active {
-    transform: scale(0.98);
-  }
+  &:active { transform: scale(0.98); }
 
   &.featured-card {
-    border: 2px solid rgba(0, 85, 164, 0.15);
-    box-shadow: 0 4px 20px rgba(0, 85, 164, 0.1);
+    border: 2px solid rgba(0, 166, 203, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 166, 203, 0.1);
   }
 
   .dna-badge {
@@ -246,22 +221,20 @@
     border-radius: 12px;
     font-size: 12px;
     font-weight: 700;
-    background: #f2f2f7;
-    color: #8e8e93;
+    background: var(--surface-muted, #F5F5F5);
+    color: var(--text-secondary, #6B7280);
 
     &.high {
-      background: linear-gradient(135deg, #0055A4, #0078D4);
+      background: linear-gradient(135deg, var(--primary, #00A6CB), var(--primary-glow, #0DCAF0));
       color: white;
     }
 
     &.medium {
-      background: linear-gradient(135deg, #0078D4, #00A8E8);
-      color: white;
+      background: rgba(0, 166, 203, 0.12);
+      color: var(--primary, #00A6CB);
     }
 
-    ion-icon {
-      font-size: 13px;
-    }
+    ion-icon { font-size: 13px; }
   }
 
   .weather-warning {
@@ -278,23 +251,21 @@
     font-size: 10px;
     font-weight: 600;
 
-    ion-icon {
-      font-size: 12px;
-    }
+    ion-icon { font-size: 12px; }
   }
 
   .card-content {
     h3 {
       font-size: 15px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--text-primary, #0B1A2B);
       margin: 0 0 4px;
       padding-right: 60px;
     }
 
     .match-reason {
       font-size: 12px;
-      color: #E31837;
+      color: var(--spent, #EA0029);
       font-weight: 600;
       margin: 0 0 10px;
     }
@@ -310,14 +281,14 @@
         align-items: center;
         gap: 4px;
         font-size: 11px;
-        color: #666;
-        background: #f8f9fa;
+        color: var(--text-secondary, #6B7280);
+        background: var(--surface-muted, #F5F5F5);
         padding: 4px 8px;
         border-radius: 8px;
 
         ion-icon {
           font-size: 12px;
-          color: #0055A4;
+          color: var(--primary, #00A6CB);
         }
       }
     }
@@ -331,8 +302,8 @@
       .tag {
         font-size: 10px;
         font-weight: 600;
-        color: #0055A4;
-        background: rgba(0, 85, 164, 0.08);
+        color: var(--primary, #00A6CB);
+        background: rgba(0, 166, 203, 0.08);
         padding: 3px 8px;
         border-radius: 6px;
         text-transform: capitalize;
@@ -347,7 +318,7 @@
       .score-bar-bg {
         flex: 1;
         height: 4px;
-        background: #f2f2f7;
+        background: var(--surface-muted, #F5F5F5);
         border-radius: 2px;
         overflow: hidden;
 
@@ -356,23 +327,15 @@
           border-radius: 2px;
           transition: width 0.6s ease;
 
-          &.fill-high {
-            background: linear-gradient(90deg, #0055A4, #0078D4);
-          }
-
-          &.fill-medium {
-            background: linear-gradient(90deg, #0078D4, #00A8E8);
-          }
-
-          &.fill-low {
-            background: #c7c7cc;
-          }
+          &.fill-high   { background: linear-gradient(90deg, var(--primary, #00A6CB), var(--primary-glow, #0DCAF0)); }
+          &.fill-medium { background: rgba(0, 166, 203, 0.5); }
+          &.fill-low    { background: var(--border-hairline, #ECECEC); }
         }
       }
 
       .score-label {
         font-size: 10px;
-        color: #8e8e93;
+        color: var(--text-secondary, #6B7280);
         font-weight: 600;
         min-width: 60px;
         text-align: right;
@@ -381,46 +344,27 @@
   }
 }
 
-/* Event Cards */
-.event-list {
-  padding: 0 16px 24px;
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-
-    h3 {
-      font-size: 17px;
-      font-weight: 700;
-      color: #1a1a1a;
-      margin: 0;
-    }
-  }
-}
-
+/* ── Old event card block (legacy) ──────────────────────────────── */
 .event-card {
-  background: white;
+  background: var(--surface, #FFFFFF);
+  border: solid  #00A6CB 2px;
   border-radius: 16px;
   overflow: hidden;
   margin-bottom: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 
-  &.featured {
-    border: 2px solid rgba(227, 24, 55, 0.2);
-  }
+  &.featured { border: 2px solid rgba(234, 0, 41, 0.2); }
 
   .event-image {
     height: 120px;
-    background: linear-gradient(135deg, #E31837, #ff4757);
+    background: linear-gradient(135deg, var(--spent, #EA0029), #ff4757);
     position: relative;
 
     .featured-ribbon {
       position: absolute;
       top: 12px;
       left: 0;
-      background: #E31837;
+      background: var(--spent, #EA0029);
       color: white;
       font-size: 10px;
       font-weight: 700;
@@ -443,7 +387,7 @@
       h3 {
         font-size: 15px;
         font-weight: 700;
-        color: #1a1a1a;
+        color: var(--text-primary, #0B1A2B);
         margin: 0;
         flex: 1;
         padding-right: 12px;
@@ -458,7 +402,7 @@
 
     .event-reason {
       font-size: 12px;
-      color: #E31837;
+      color: var(--spent, #EA0029);
       font-weight: 600;
       margin: 0 0 10px;
     }
@@ -474,239 +418,196 @@
         align-items: center;
         gap: 4px;
         font-size: 12px;
-        color: #666;
+        color: var(--text-secondary, #6B7280);
 
         ion-icon {
           font-size: 14px;
-          color: #0055A4;
+          color: var(--primary, #00A6CB);
         }
       }
     }
 
-    .event-tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+    .event-tags { display: flex; gap: 6px; flex-wrap: wrap; }
   }
 }
 
-/* Modal */
-.activity-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
+/* ── Explore Header (shared tokens from global.scss .nets-toolbar) ─ */
 
-  .modal-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-  }
-
-  .modal-sheet {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    border-radius: 24px 24px 0 0;
-    max-height: 85vh;
-    overflow-y: auto;
-    padding-bottom: 24px;
-
-    .modal-handle {
-      width: 36px;
-      height: 4px;
-      background: #c7c7cc;
-      border-radius: 2px;
-      margin: 12px auto;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 20px 16px;
-
-      h2 {
-        font-size: 20px;
-        font-weight: 700;
-        color: #1a1a1a;
-        margin: 0;
-        flex: 1;
-      }
-
-      .close-btn {
-        --color: #8e8e93;
-      }
-    }
-
-    .modal-body {
-      padding: 0 20px;
-
-      .modal-dna-hero {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px 0;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #f2f2f7;
-
-        .dna-circle {
-          width: 100px;
-          height: 100px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #f2f2f7, #e5e5ea);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 12px;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-
-          &.high-match {
-            background: linear-gradient(135deg, #0055A4, #0078D4);
-            box-shadow: 0 4px 16px rgba(0, 85, 164, 0.25);
-
-            .dna-score,
-            .dna-label {
-              color: white;
-            }
-          }
-
-          .dna-score {
-            font-size: 32px;
-            font-weight: 800;
-            color: #0055A4;
-            line-height: 1;
-          }
-
-          .dna-label {
-            font-size: 10px;
-            font-weight: 600;
-            color: #8e8e93;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-        }
-
-        .dna-reason {
-          font-size: 14px;
-          color: #E31837;
-          font-weight: 600;
-          text-align: center;
-          margin: 0;
-        }
-      }
-
-      .detail-section {
-        margin-bottom: 20px;
-
-        h4 {
-          font-size: 13px;
-          font-weight: 700;
-          color: #8e8e93;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin: 0 0 8px;
-        }
-
-        p {
-          font-size: 14px;
-          color: #333;
-          line-height: 1.5;
-          margin: 0;
-        }
-      }
-
-      .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 20px;
-
-        .detail-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 13px;
-          color: #333;
-
-          ion-icon {
-            font-size: 18px;
-          }
-        }
-      }
-
-      .tag-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .weather-section {
-        .weather-alert {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(255, 193, 7, 0.1);
-          padding: 12px;
-          border-radius: 12px;
-          font-size: 13px;
-          color: #f57f17;
-
-          ion-icon {
-            font-size: 20px;
-            flex-shrink: 0;
-          }
-        }
-      }
-    }
-
-    .modal-footer {
-      padding: 16px 20px 0;
-
-      .nets-primary-btn {
-        --background: linear-gradient(135deg, #0055A4, #003D7A);
-        --border-radius: 14px;
-        --box-shadow: 0 4px 16px rgba(0, 85, 164, 0.25);
-        font-weight: 700;
-        height: 52px;
-      }
-    }
-  }
-}
-
-.animate-slide-up {
-  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-
-  to {
-    transform: translateY(0);
-  }
-}
-
-/* Explore Header — shared toolbar tokens set by .nets-toolbar in global.scss */
-
-/* Search */
-.search-wrap {
-  padding: 8px 16px;
+/* ── Search + Filter Row ────────────────────────────────────────── */
+.search-filter-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px 0;
+  gap: 8px;
 
   .explore-search {
-    --background: #f2f2f7;
+    flex: 1;
+    --background: var(--surface-muted, #F5F5F5);
     --border-radius: 12px;
-    --placeholder-color: #8e8e93;
-    --icon-color: #0055A4;
+    --placeholder-color: var(--text-secondary, #6B7280);
+    --icon-color: var(--primary, #00A6CB);
+    padding: 0;
+  }
+
+  .filter-btn {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border-hairline, #ECECEC);
+    background: var(--surface, #FFFFFF);
+    color: var(--text-secondary, #6B7280);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+
+    ion-icon { font-size: 20px; pointer-events: none; }
+
+    &.filter-active {
+      border-color: var(--primary, #00A6CB);
+      background: rgba(0, 166, 203, 0.08);
+      color: var(--primary, #00A6CB);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary, #00A6CB);
+      outline-offset: 2px;
+    }
+
+    .filter-count {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 3px;
+      border-radius: 999px;
+      background: var(--primary, #00A6CB);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
   }
 }
 
-/* Tab Switcher */
+/* ── Filter Dropdown Panel ──────────────────────────────────────── */
+.filter-panel {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.28s var(--ease-std, ease), opacity 0.2s ease;
+  margin: 0 16px;
+
+  &.filter-panel-open {
+    max-height: 420px;
+    opacity: 1;
+    overflow-y: auto;
+    padding-bottom: 4px;
+  }
+
+  .filter-group {
+    padding-top: 14px;
+
+    .filter-group-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary, #6B7280);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin: 0 0 8px;
+    }
+
+    .filter-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  }
+
+  .filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 14px 0 6px;
+
+    .filter-clear-btn {
+      border: none;
+      background: none;
+      color: var(--spent, #EA0029);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+  }
+}
+
+/* ── Filter chips (inside panel) ────────────────────────────────── */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-hairline, #ECECEC);
+  background: var(--surface, #FFFFFF);
+  color: var(--text-secondary, #6B7280);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+
+  &.filter-chip-active {
+    background: var(--primary, #00A6CB);
+    border-color: var(--primary, #00A6CB);
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary, #00A6CB);
+    outline-offset: 2px;
+  }
+}
+
+/* ── Active filter chip row (below search) ──────────────────────── */
+.active-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 16px 0;
+
+  .active-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1.5px solid var(--primary, #00A6CB);
+    background: rgba(0, 166, 203, 0.08);
+    color: var(--primary, #00A6CB);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+
+    ion-icon { font-size: 12px; pointer-events: none; }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary, #00A6CB);
+      outline-offset: 2px;
+    }
+  }
+}
+
+/* ── Tab Switcher — active = cyan ───────────────────────────────── */
 .tab-switcher {
   display: flex;
   gap: 8px;
@@ -719,41 +620,86 @@
     justify-content: center;
     gap: 6px;
     padding: 10px;
+    min-height: 44px;
     border-radius: 12px;
     border: none;
-    background: #f2f2f7;
-    color: #8e8e93;
+    background: var(--surface-muted, #F5F5F5);
+    color: var(--text-secondary, #6B7280);
     font-size: 14px;
     font-weight: 600;
-    transition: all 0.2s;
+    transition: background 0.2s, color 0.2s;
 
     &.active {
-      background: #0055A4;
+      background: var(--primary, #00A6CB);
       color: white;
     }
 
-    ion-icon {
-      font-size: 18px;
+    &:focus-visible {
+      outline: 2px solid var(--primary, #00A6CB);
+      outline-offset: 2px;
     }
+
+    ion-icon { font-size: 18px; }
   }
 }
 
-/* Skeleton Loading */
+/* ── Skeleton Loading ────────────────────────────────────────────── */
 .skeleton-list {
   padding: 0 16px;
+  .skeleton-card { margin-bottom: 16px; }
+}
 
-  .skeleton-card {
-    margin-bottom: 16px;
+/* ── Unified match badge (hero + collapsed cards) ───────────────── */
+.match-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(0, 166, 203, 0.12);
+  color: var(--primary, #00A6CB);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Thumbnail (collapsed cards, image or placeholder) ───────────── */
+.event-thumb,
+.activity-thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(0, 166, 203, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  ion-icon {
+    font-size: 28px;
+    color: var(--primary, #00A6CB);
+    opacity: 0.55;
   }
 }
 
-/* Hero Card */
+/* ── Hero Card (top DNA match — events + activities) ─────────────── */
 .hero-card {
   margin: 0 16px 16px;
+  border: 2px solid var(--primary, #00A6CB);
   border-radius: 20px;
   overflow: hidden;
-  background: white;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  background: var(--surface, #FFFFFF);
+  box-shadow: var(--card-shadow, 0 4px 16px rgba(11, 26, 43, 0.08));
+  cursor: pointer;
+
+  &:active { transform: scale(0.985); transition: transform 0.15s; }
 
   .hero-image {
     height: 200px;
@@ -761,26 +707,32 @@
     background-position: center;
     position: relative;
 
-    .hero-overlay {
+    /* placeholder when no imageUrl */
+    &.hero-placeholder {
+      background: linear-gradient(135deg, rgba(0, 166, 203, 0.10), rgba(13, 202, 240, 0.16));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .placeholder-icon {
+        font-size: 80px;
+        color: var(--primary, #00A6CB);
+        opacity: 0.35;
+      }
+    }
+
+    /* badge overlaid top-left */
+    .hero-match-badge {
       position: absolute;
       top: 12px;
       left: 12px;
-
-      .hero-badge {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        background: rgba(0, 85, 164, 0.9);
-        color: white;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 700;
-
-        ion-icon {
-          font-size: 14px;
-        }
-      }
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(0, 166, 203, 0.88);
+      color: white;
+      backdrop-filter: blur(6px);
     }
   }
 
@@ -790,19 +742,24 @@
     .hero-title {
       font-size: 18px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--text-primary, #0B1A2B);
       margin: 0 0 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .hero-meta {
       font-size: 13px;
-      color: #8e8e93;
+      color: var(--text-secondary, #6B7280);
       margin: 0 0 8px;
     }
 
     .hero-reason {
       font-size: 13px;
-      color: #0055A4;
+      color: var(--primary, #00A6CB);
       font-weight: 500;
       margin: 0 0 12px;
     }
@@ -811,103 +768,78 @@
       .hero-price {
         font-size: 16px;
         font-weight: 700;
-        color: #1a1a1a;
+        color: var(--text-primary, #0B1A2B);
+        font-variant-numeric: tabular-nums;
 
-        &.free {
-          color: #22C55E;
-        }
+        &.free { color: var(--income, #16B364); }
       }
     }
   }
 }
 
-/* Event List */
+/* Activity hero card — cyan border to distinguish from event hero */
+.activity-hero-card {
+  border: 2px solid var(--primary, #00A6CB);
+}
+
+/* ── Event List (collapsed cards) ───────────────────────────────── */
 .event-list {
   padding: 0 16px;
 
   .event-card {
     display: flex;
     gap: 12px;
-    background: white;
+    background: var(--surface, #FFFFFF);
     border-radius: 16px;
     padding: 12px;
     margin-bottom: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: transform 0.15s;
 
-    .event-image {
-      width: 80px;
-      height: 80px;
-      border-radius: 12px;
-      overflow: hidden;
-      flex-shrink: 0;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
+    &:active { transform: scale(0.98); }
 
     .event-content {
       flex: 1;
+      min-width: 0;
 
       .event-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 4px;
+        gap: 8px;
 
         .event-category {
           font-size: 11px;
-          color: #8e8e93;
+          color: var(--text-secondary, #6B7280);
           text-transform: uppercase;
           font-weight: 600;
-        }
-
-        .event-match {
-          font-size: 12px;
-          font-weight: 700;
-          padding: 2px 8px;
-          border-radius: 10px;
-
-          &.match-success {
-            background: #dcfce7;
-            color: #16a34a;
-          }
-
-          &.match-primary {
-            background: #dbeafe;
-            color: #0055A4;
-          }
-
-          &.match-warning {
-            background: #fef3c7;
-            color: #d97706;
-          }
-
-          &.match-medium {
-            background: #f3f4f6;
-            color: #6b7280;
-          }
+          letter-spacing: 0.4px;
         }
       }
 
       .event-title {
         font-size: 15px;
         font-weight: 700;
-        color: #1a1a1a;
+        color: var(--text-primary, #0B1A2B);
         margin: 0 0 4px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
 
       .event-meta {
         font-size: 12px;
-        color: #8e8e93;
+        color: var(--text-secondary, #6B7280);
         margin: 0 0 4px;
       }
 
       .event-reason {
         font-size: 12px;
-        color: #0055A4;
+        color: var(--primary, #00A6CB);
         font-weight: 500;
         margin: 0 0 8px;
       }
@@ -916,103 +848,75 @@
         .event-price {
           font-size: 14px;
           font-weight: 700;
-          color: #1a1a1a;
+          color: var(--text-primary, #0B1A2B);
+          font-variant-numeric: tabular-nums;
 
-          &.free {
-            color: #22C55E;
-          }
+          &.free { color: var(--income, #16B364); }
         }
       }
     }
   }
 }
 
-/* Activity List */
+/* ── Activity List (collapsed cards) ────────────────────────────── */
 .activity-list {
   padding: 0 16px;
 
   .activity-card {
     display: flex;
     gap: 12px;
-    background: white;
+    background: var(--surface, #FFFFFF);
+    border: 2px solid var(--primary, #00A6CB);
     border-radius: 16px;
-    padding: 14px;
+    padding: 12px;
     margin-bottom: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: transform 0.15s;
 
-    .activity-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-
-      ion-icon {
-        color: #0055A4;
-        font-size: 20px;
-      }
-    }
+    &:active { transform: scale(0.98); }
 
     .activity-content {
       flex: 1;
+      min-width: 0;
 
       .activity-header {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         margin-bottom: 4px;
+        gap: 8px;
 
         .activity-category {
           font-size: 11px;
-          color: #8e8e93;
+          color: var(--text-secondary, #6B7280);
           text-transform: uppercase;
-        }
-
-        .activity-match {
-          font-size: 12px;
-          font-weight: 700;
-          padding: 2px 8px;
-          border-radius: 10px;
-
-          &.match-success {
-            background: #dcfce7;
-            color: #16a34a;
-          }
-
-          &.match-primary {
-            background: #dbeafe;
-            color: #0055A4;
-          }
-
-          &.match-warning {
-            background: #fef3c7;
-            color: #d97706;
-          }
-
-          &.match-medium {
-            background: #f3f4f6;
-            color: #6b7280;
-          }
+          font-weight: 600;
+          letter-spacing: 0.4px;
         }
       }
 
       .activity-title {
         font-size: 15px;
         font-weight: 700;
+        color: var(--text-primary, #0B1A2B);
         margin: 0 0 4px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
 
       .activity-location {
         font-size: 12px;
-        color: #8e8e93;
+        color: var(--text-secondary, #6B7280);
         margin: 0 0 4px;
       }
 
       .activity-reason {
         font-size: 12px;
-        color: #0055A4;
+        color: var(--primary, #00A6CB);
         font-weight: 500;
         margin: 0 0 8px;
       }
@@ -1024,11 +928,13 @@
         .activity-cost {
           font-size: 14px;
           font-weight: 700;
+          color: var(--text-primary, #0B1A2B);
+          font-variant-numeric: tabular-nums;
         }
 
         .activity-weather {
           font-size: 11px;
-          color: #f59e0b;
+          color: var(--predicted, #F5A524);
           display: flex;
           align-items: center;
           gap: 4px;
@@ -1038,8 +944,9 @@
   }
 }
 
-/* Event Modal */
-.event-modal {
+/* ── Shared detail template (Event + Activity modals) ───────────── */
+.event-modal,
+.activity-modal {
   .event-hero {
     .event-hero-image {
       height: 240px;
@@ -1047,10 +954,15 @@
       background-position: center;
       position: relative;
 
+      /* activity hero with no image — cyan placeholder */
+      &.placeholder-hero {
+        background: linear-gradient(135deg, var(--primary, #00A6CB), var(--primary-glow, #0DCAF0));
+      }
+
       .event-hero-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
         display: flex;
         align-items: flex-end;
         justify-content: center;
@@ -1066,16 +978,18 @@
           align-items: center;
           justify-content: center;
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+          animation: dna-reveal 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 
           .dna-score {
             font-size: 24px;
             font-weight: 800;
-            color: #0055A4;
+            color: var(--primary, #00A6CB);
+            font-variant-numeric: tabular-nums;
           }
 
           .dna-label {
             font-size: 10px;
-            color: #8e8e93;
+            color: var(--text-secondary, #6B7280);
             text-transform: uppercase;
           }
         }
@@ -1089,11 +1003,13 @@
     .detail-title {
       font-size: 22px;
       font-weight: 700;
+      color: var(--text-primary, #0B1A2B);
       margin: 0 0 12px;
     }
 
     .detail-meta {
       display: flex;
+      flex-wrap: wrap;
       gap: 16px;
       margin-bottom: 16px;
 
@@ -1102,18 +1018,16 @@
         align-items: center;
         gap: 6px;
         font-size: 14px;
-        color: #666;
+        color: var(--text-secondary, #6B7280);
 
-        ion-icon {
-          color: #0055A4;
-        }
+        ion-icon { color: var(--primary, #00A6CB); }
       }
     }
 
     .detail-description {
       font-size: 15px;
-      color: #444;
-      line-height: 1.5;
+      color: var(--text-secondary, #6B7280);
+      line-height: 1.6;
       margin-bottom: 16px;
     }
 
@@ -1124,12 +1038,13 @@
       margin-bottom: 20px;
 
       .tag-chip {
-        background: #f2f2f7;
-        color: #0055A4;
+        background: var(--surface-muted, #F5F5F5);
+        color: var(--primary, #00A6CB);
         padding: 6px 12px;
         border-radius: 12px;
         font-size: 12px;
         font-weight: 600;
+        border: 1px solid var(--border-hairline, #ECECEC);
       }
     }
 
@@ -1141,29 +1056,31 @@
       .price-block,
       .match-block {
         flex: 1;
-        background: #f8f9fa;
+        background: var(--surface-muted, #F5F5F5);
         padding: 16px;
         border-radius: 16px;
         text-align: center;
+        border: 1px solid var(--border-hairline, #ECECEC);
 
         .price-label,
         .match-label {
-          font-size: 12px;
-          color: #8e8e93;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--text-secondary, #6B7280);
           text-transform: uppercase;
+          letter-spacing: 0.4px;
           display: block;
-          margin-bottom: 4px;
+          margin-bottom: 6px;
         }
 
         .price-value,
         .match-value {
           font-size: 24px;
           font-weight: 800;
-          color: #1a1a1a;
+          color: var(--text-primary, #0B1A2B);
+          font-variant-numeric: tabular-nums;
 
-          &.free {
-            color: #22C55E;
-          }
+          &.free { color: var(--income, #16B364); }
         }
       }
     }
@@ -1186,34 +1103,44 @@
         font-weight: 700;
         cursor: pointer;
 
-        ion-icon {
-          font-size: 20px;
-        }
+        ion-icon { font-size: 20px; }
       }
 
       .btn-predict {
-        background: #f2f2f7;
-        color: #0055A4;
+        background: var(--surface-muted, #F5F5F5);
+        color: var(--primary, #00A6CB);
+        border: 1px solid var(--border-hairline, #ECECEC);
+
+        &:focus-visible {
+          outline: 2px solid var(--primary, #00A6CB);
+          outline-offset: 2px;
+        }
       }
 
       .btn-buy {
-        background: linear-gradient(135deg, #0055A4, #0078D4);
+        background: linear-gradient(135deg, var(--primary, #00A6CB), var(--primary-glow, #0DCAF0));
         color: white;
-      }
 
+        &:focus-visible {
+          outline: 2px solid var(--primary, #00A6CB);
+          outline-offset: 2px;
+        }
+      }
     }
 
+    /* Activity date/time picker section */
     .picker-section {
       margin: 20px 0;
       padding: 16px;
-      background: rgba(var(--ion-color-primary-rgb), 0.05);
+      background: rgba(0, 166, 203, 0.05);
       border-radius: 16px;
+      border: 1px solid rgba(0, 166, 203, 0.12);
 
       .section-subtitle {
         margin: 0 0 12px 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--ion-color-medium);
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-secondary, #6B7280);
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
@@ -1225,9 +1152,42 @@
         margin-bottom: 8px;
 
         ion-label {
+          font-size: 14px;
           font-weight: 500;
+          color: var(--text-primary, #0B1A2B);
+        }
+
+        ion-icon[slot="start"] {
+          color: var(--primary, #00A6CB);
+          margin-inline-end: 12px;
+        }
+
+        ion-datetime-button::part(native) {
+          background: var(--surface, #FFFFFF);
+          color: var(--primary, #00A6CB);
+          border: 1.5px solid rgba(0, 166, 203, 0.35);
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 600;
+          padding: 6px 14px;
+          box-shadow: none;
         }
       }
     }
   }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* DNA circle bounce-reveal (§10 motion) */
+@keyframes dna-reveal {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
 }

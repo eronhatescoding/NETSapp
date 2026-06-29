@@ -329,8 +329,8 @@
 
 .timeline-item {
   display: flex;
-  gap: var(--nets-space-3);
-  margin-bottom: var(--nets-space-2);
+  gap: 12px;
+  margin-bottom: 16px;
   opacity: 0;
 }
 
@@ -354,8 +354,9 @@
 .timeline-line {
   flex: 1;
   width: 2px;
-  background: linear-gradient(to bottom, var(--nets-gray-200), transparent);
+  background: linear-gradient(to bottom, var(--primary, #00A6CB), rgba(0, 166, 203, 0.15));
   margin: 4px 0;
+  border-radius: 1px;
 }
 
 .activity-card {
