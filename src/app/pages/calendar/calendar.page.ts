@@ -205,13 +205,50 @@ export class CalendarPage {
   }
 
   showStatsModal = false;
+  showHelpModal  = false;
+  helpPage = 0;
+  readonly helpCards = [0, 1, 2, 3];
 
-  openStats() {
-    this.showStatsModal = true;
+  openStats()  { this.showStatsModal = true; }
+  closeStats() { this.showStatsModal = false; }
+
+  openHelp()  { this.helpPage = 0; this.showHelpModal = true; }
+  closeHelp() { this.showHelpModal = false; }
+  nextHelpPage() { if (this.helpPage < this.helpCards.length - 1) this.helpPage++; }
+  prevHelpPage() { if (this.helpPage > 0) this.helpPage--; }
+
+  getCategoryIcon(name: string): string {
+    const map: Record<string, string> = {
+      'Food & Beverage': 'restaurant-outline',
+      'Shopping':        'bag-handle-outline',
+      'Entertainment':   'film-outline',
+      'Fitness':         'barbell-outline',
+      'Education':       'book-outline',
+      'Transport':       'car-outline',
+      'Lifestyle & Services': 'sparkles-outline',
+      'Lifestyle':       'sparkles-outline',
+      'Subscriptions':   'repeat-outline',
+      'Income':          'cash-outline',
+    };
+    return map[name] || 'grid-outline';
   }
 
-  closeStats() {
-    this.showStatsModal = false;
+  getCategoryClass(name: string): string {
+    const map: Record<string, string> = {
+      'Food & Beverage': 'cat-fnb',
+      'Shopping':        'cat-shop',
+      'Entertainment':   'cat-ent',
+      'Fitness':         'cat-fit',
+      'Education':       'cat-edu',
+      'Transport':       'cat-trans',
+      'Lifestyle & Services': 'cat-life',
+      'Lifestyle':       'cat-life',
+    };
+    return map[name] || 'cat-other';
+  }
+
+  getSortedCategories() {
+    return [...this.categoryBreakdown].sort((a, b) => b.amount - a.amount);
   }
 
   viewTransactionDetail(transaction: Transaction) {

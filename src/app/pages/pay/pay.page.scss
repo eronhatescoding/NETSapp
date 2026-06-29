@@ -3,29 +3,8 @@
 // ─────────────────────────────────────────────────────────────────
 
 .pay-header ion-toolbar {
-  --background: #FFFFFF;
-  --border-width: 0;
-
-  .back-btn { --color: #011835; }
-
-  .pay-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-
-    .nets-logo-img {
-      height: 24px;
-      width: auto;
-      display: block;
-    }
-
-    .pay-label {
-      font-size: 1rem;
-      font-weight: 500;
-      color: #5B6470;
-    }
-  }
+  /* Shared toolbar tokens set by .nets-toolbar in global.scss */
+  .back-btn { --color: var(--text-primary, #0B1A2B); }
 }
 
 .pay-content {

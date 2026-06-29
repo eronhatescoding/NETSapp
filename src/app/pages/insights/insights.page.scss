@@ -3,24 +3,10 @@
 // Force light mode regardless of OS dark mode preference
 // ─────────────────────────────────────────────────────────────────
 
-// Header
+// Header — shared toolbar tokens set by .nets-toolbar in global.scss
 .dna-header ion-toolbar {
-  --background: #FFFFFF;
-  --border-width: 0;
-  --color: #011835;
-
-  .header-brand {
-    padding-left: 8px;
-
-    .nets-logo-img {
-      height: 28px;
-      width: auto;
-      display: block;
-    }
-  }
-
   .settings-btn {
-    --color: #5B6470;
+    --color: var(--text-secondary, #5B6470);
     --ripple-color: transparent;
     font-size: 1.25rem;
   }

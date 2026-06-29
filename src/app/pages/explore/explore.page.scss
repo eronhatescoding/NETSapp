@@ -692,33 +692,7 @@
   }
 }
 
-/* Explore Header */
-.explore-header {
-  ion-toolbar {
-    --background: #ffffff;
-    --border-width: 0;
-
-    ion-title { padding: 0 16px; }
-  }
-}
-
-.explore-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  .toolbar-logo {
-    height: 26px;
-    width: auto;
-    display: block;
-  }
-
-  .toolbar-subtitle {
-    font-size: 13px;
-    font-weight: 600;
-    color: #6B7280;
-  }
-}
+/* Explore Header — shared toolbar tokens set by .nets-toolbar in global.scss */
 
 /* Search */
 .search-wrap {

@@ -1,13 +1,11 @@
-<ion-header class="ion-no-border" style="display: block;">
-  <ion-toolbar class="calendar-toolbar" style="--min-height: 56px;">
-    <ion-title style="height: 56px; display: flex; align-items: center;">
-      <div class="toolbar-brand">
-        <img src="assets/nets-logo.png" alt="NETS" class="toolbar-logo">
-        <span class="toolbar-subtitle">Smart Calendar</span>
-      </div>
-    </ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="nets-toolbar calendar-toolbar">
+    <div class="toolbar-brand" slot="start">
+      <img src="assets/nets-logo.png" alt="NETS" class="toolbar-logo">
+      <span class="toolbar-subtitle">Smart Calendar</span>
+    </div>
     <ion-buttons slot="end">
-      <ion-button (click)="openStats()" class="stats-btn">
+      <ion-button (click)="openHelp()" class="stats-btn">
         <ion-icon name="help-circle-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -358,7 +356,7 @@
     </ion-content>
   </ng-template>
 </ion-modal>
-<!-- Stats Modal -->
+<!-- This Month modal -->
 <ion-modal [isOpen]="showStatsModal" (didDismiss)="closeStats()" class="stats-modal">
   <ng-template>
     <ion-header class="ion-no-border">
@@ -368,34 +366,139 @@
             <ion-icon name="close-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
-        <ion-title>Spending Analytics</ion-title>
+        <ion-title>This Month</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="stats-content">
+      <!-- KPI hero -->
       <div class="stats-hero">
         <div class="hero-card">
+          <ion-icon name="trending-down-outline" class="hero-icon"></ion-icon>
           <span class="hero-label">Total Spent</span>
-          <span class="hero-value">${{ monthStats.totalSpent | number:'1.2-2' }}</span>
+          <span class="hero-value tabular">${{ monthStats.totalSpent | number:'1.2-2' }}</span>
         </div>
         <div class="hero-card income">
+          <ion-icon name="trending-up-outline" class="hero-icon"></ion-icon>
           <span class="hero-label">Total Income</span>
-          <span class="hero-value">${{ monthStats.totalIncome | number:'1.2-2' }}</span>
+          <span class="hero-value tabular">${{ monthStats.totalIncome | number:'1.2-2' }}</span>
         </div>
       </div>
+
+      <!-- Category breakdown with icons + animated bars -->
       <div class="breakdown-section">
-        <h3 class="breakdown-title">By Category</h3>
+        <h3 class="breakdown-title">By category</h3>
         <div class="breakdown-list">
-          <div class="breakdown-item" *ngFor="let cat of categoryBreakdown; let i = index">
-            <div class="breakdown-header">
-              <span class="breakdown-name">{{ cat.name }}</span>
-              <span class="breakdown-amount">${{ cat.amount | number:'1.2-2' }}</span>
+          <div class="breakdown-item" *ngFor="let cat of getSortedCategories(); let i = index">
+            <div class="bd-row">
+              <div class="bd-icon-circle" [class]="getCategoryClass(cat.name)">
+                <ion-icon [name]="getCategoryIcon(cat.name)" class="ci"></ion-icon>
+              </div>
+              <div class="bd-info">
+                <span class="bd-name">{{ cat.name }}</span>
+                <span class="bd-pct tabular">
+                  {{ monthStats.totalSpent > 0 ? ((cat.amount / monthStats.totalSpent) * 100 | number:'1.0-0') : 0 }}%
+                </span>
+              </div>
+              <span class="bd-amount tabular">${{ cat.amount | number:'1.2-2' }}</span>
             </div>
             <div class="breakdown-bar-bg">
-              <div class="breakdown-bar-fill" [style.width.%]="(cat.amount / monthStats.totalSpent) * 100"></div>
+              <div class="breakdown-bar-fill"
+                [class]="getCategoryClass(cat.name)"
+                [style.width.%]="monthStats.totalSpent > 0 ? (cat.amount / monthStats.totalSpent) * 100 : 0"
+                [style.animation-delay]="(i * 80) + 'ms'">
+              </div>
             </div>
           </div>
         </div>
       </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- Help / tutorial overlay -->
+<ion-modal [isOpen]="showHelpModal" (didDismiss)="closeHelp()" class="help-modal">
+  <ng-template>
+    <ion-content class="help-content">
+
+      <!-- Progress dots -->
+      <div class="help-progress">
+        <div class="help-prog-dot" *ngFor="let _ of helpCards; let i = index" [class.active]="helpPage === i"></div>
+      </div>
+
+      <!-- Card 1: Welcome -->
+      <div class="help-card" *ngIf="helpPage === 0">
+        <div class="help-icon-wrap cyan">
+          <ion-icon name="calendar-outline"></ion-icon>
+        </div>
+        <h2 class="help-card-title">Your smart calendar</h2>
+        <p class="help-card-body">Everything you spend — planned and paid — shown in one clean view, powered by your NETS transactions.</p>
+      </div>
+
+      <!-- Card 2: Dots -->
+      <div class="help-card" *ngIf="helpPage === 1">
+        <div class="help-icon-wrap neutral">
+          <ion-icon name="radio-button-on-outline"></ion-icon>
+        </div>
+        <h2 class="help-card-title">Read the dots</h2>
+        <div class="hdl-legend">
+          <div class="hdl-row">
+            <span class="act-dot cyan big"></span>
+            <div class="hdl-text-wrap">
+              <span class="hdl-label">Cyan dot</span>
+              <span class="hdl-desc">You spent money here</span>
+            </div>
+          </div>
+          <div class="hdl-row">
+            <span class="act-dot amber big"></span>
+            <div class="hdl-text-wrap">
+              <span class="hdl-label">Amber dot</span>
+              <span class="hdl-desc">AI predicted an activity</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Tap a day -->
+      <div class="help-card" *ngIf="helpPage === 2">
+        <div class="help-icon-wrap cyan">
+          <ion-icon name="hand-right-outline"></ion-icon>
+        </div>
+        <h2 class="help-card-title">Tap any day</h2>
+        <p class="help-card-body">See a full timeline of payments and AI predictions for that day. Tap any entry to expand its details.</p>
+      </div>
+
+      <!-- Card 4: PAID vs PREDICTED -->
+      <div class="help-card" *ngIf="helpPage === 3">
+        <div class="help-pills-demo">
+          <span class="help-demo-pill paid">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            PAID
+          </span>
+          <span class="help-demo-pill predicted">
+            <ion-icon name="sparkles-outline"></ion-icon>
+            PREDICTED
+          </span>
+        </div>
+        <h2 class="help-card-title">PAID vs PREDICTED</h2>
+        <p class="help-card-body">Red entries are real transactions. Amber entries are your DNA's forecast — tap the bin icon on any prediction to dismiss it.</p>
+      </div>
+
+      <!-- Navigation -->
+      <div class="help-nav">
+        <button class="help-btn secondary" *ngIf="helpPage > 0" (click)="prevHelpPage()">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+          Back
+        </button>
+        <button class="help-btn primary" *ngIf="helpPage < 3" (click)="nextHelpPage()">
+          Next
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </button>
+        <button class="help-btn done" *ngIf="helpPage === 3" (click)="closeHelp()">
+          <ion-icon name="checkmark-outline"></ion-icon>
+          Got it
+        </button>
+      </div>
+
     </ion-content>
   </ng-template>
 </ion-modal>
